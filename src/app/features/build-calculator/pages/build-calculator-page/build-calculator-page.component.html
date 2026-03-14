@@ -38,7 +38,7 @@
       <div class="space-y-6">
 
         <!-- Champion selection -->
-        <section aria-label="Champion selection" class="space-y-3">
+        <section aria-label="Champion selection" class="flex flex-col gap-2 space-y-3">
           <h2 class="text-lg font-semibold">Champion</h2>
           <app-champion-search />
           @if (build.selectedChampion()) {
@@ -66,8 +66,8 @@
 
         <!-- Stats panel + Save -->
         @if (build.finalStats()) {
+          <div class="flex flex-col gap-2 justify-end">
           <app-stats-panel />
-          <div class="flex justify-end">
             <button
               z-button
               type="button"

@@ -89,6 +89,7 @@ export class ZardPopoverDirective implements OnInit, OnDestroy {
   readonly zOrigin = input<ElementRef>();
   readonly zVisible = input<boolean>(false);
   readonly zOverlayClickable = input<boolean>(true);
+  readonly zMatchTriggerWidth = input<boolean>(false);
   readonly zVisibleChange = output<boolean>();
 
   private readonly isVisible = signal(false);
@@ -145,6 +146,9 @@ export class ZardPopoverDirective implements OnInit, OnDestroy {
 
     const templatePortal = new TemplatePortal(this.zContent(), this.viewContainerRef);
     this.overlayRef?.attach(templatePortal);
+    if (this.zMatchTriggerWidth()) {
+      this.overlayRef?.updateSize({ width: this.nativeElement.offsetWidth });
+    }
     this.isVisible.set(true);
     this.zVisibleChange.emit(true);
   }

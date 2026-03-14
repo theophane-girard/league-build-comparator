@@ -72,6 +72,7 @@ export interface ZardComboboxGroup {
       zPopover
       role="combobox"
       [zContent]="popoverContent"
+      [zMatchTriggerWidth]="true"
       [zType]="buttonVariant()"
       [class]="buttonClasses()"
       [zDisabled]="disabled()"
