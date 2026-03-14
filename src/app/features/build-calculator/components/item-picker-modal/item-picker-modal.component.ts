@@ -4,10 +4,13 @@ import {
   computed,
   inject,
   input,
+  OnDestroy,
   OnInit,
   output,
+  PLATFORM_ID,
   signal,
 } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 
 import { ZardButtonComponent } from '@/shared/components/button';
@@ -63,8 +66,9 @@ const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
     '(document:keydown.escape)': 'close()',
   },
 })
-export class ItemPickerModalComponent implements OnInit {
+export class ItemPickerModalComponent implements OnInit, OnDestroy {
   protected readonly ddragon = inject(DdragonService);
+  private readonly platformId = inject(PLATFORM_ID);
 
   readonly slotIndex = input.required<number>();
   readonly initialItems = input.required<(Item | null)[]>();
@@ -128,7 +132,16 @@ export class ItemPickerModalComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     this.activeSlotIndex.set(this.slotIndex());
     this.localItems.set([...this.initialItems()]);
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = 'hidden';
+    }
     await this.ddragon.loadItems();
+  }
+
+  ngOnDestroy(): void {
+    if (isPlatformBrowser(this.platformId)) {
+      document.body.style.overflow = '';
+    }
   }
 
   protected setActiveSlot(index: number): void {
