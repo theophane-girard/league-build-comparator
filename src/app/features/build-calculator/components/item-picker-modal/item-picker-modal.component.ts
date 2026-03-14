@@ -51,7 +51,7 @@ const ITEM_CATEGORIES: ItemCategory[] = [
   { id: 'critical', label: 'Critical Strike', icon: 'crosshair', tags: ['CriticalStrike'] },
   { id: 'lifesteal', label: 'Life Steal', icon: 'heart', tags: ['LifeSteal'] },
   { id: 'boots', label: 'Boots', icon: 'footprints', tags: ['Boots'] },
-  { id: 'jungle', label: 'Jungle', icon: 'zap', tags: ['Jungle'] },
+  { id: 'ability-haste', label: 'Ability Haste', icon: 'hourglass', tags: ['CooldownReduction'] },
 ];
 
 const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
@@ -103,7 +103,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
   protected readonly previewedItem = signal<Item | null>(null);
   protected readonly searchText = signal('');
   protected readonly activeFilters = signal<Set<string>>(new Set());
-  protected readonly selectedMapId = signal('30');
+  protected readonly selectedMapId = signal('11');
 
   protected readonly filteredItems = computed(() => {
     const mapId = this.selectedMapId();
