@@ -67,7 +67,8 @@
               "buildTarget": "zard-test:build:production"
             },
             "development": {
-              "buildTarget": "zard-test:build:development"
+              "buildTarget": "zard-test:build:development",
+              "hmr": true
             }
           },
           "defaultConfiguration": "development"

@@ -20,6 +20,7 @@ import { ZardInputDirective } from '@/shared/components/input';
 import { DdragonService } from '@/shared/services/ddragon.service';
 import { ItemSlotComponent } from '../item-slot/item-slot.component';
 import type { Item } from '../../models/item.model';
+import { ZardInputGroupComponent } from '@/shared/components/input-group';
 
 interface ItemCategory {
   id: string;
@@ -59,7 +60,14 @@ const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
 
 @Component({
   selector: 'app-item-picker-modal',
-  imports: [ZardButtonComponent, ZardIconComponent, ZardInputDirective, ItemSlotComponent, CdkTrapFocus],
+  imports: [
+    ZardButtonComponent,
+    ZardIconComponent,
+    ZardInputDirective,
+    ItemSlotComponent,
+    CdkTrapFocus,
+    ZardInputGroupComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './item-picker-modal.component.html',
   host: {
@@ -87,13 +95,13 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     let items = this.ddragon.items();
     const search = this.searchText().toLowerCase().trim();
     if (search) {
-      items = items.filter(i => i.name.toLowerCase().includes(search));
+      items = items.filter((i) => i.name.toLowerCase().includes(search));
     }
     const filterId = this.activeFilter();
     if (filterId !== 'all') {
-      const category = ITEM_CATEGORIES.find(c => c.id === filterId);
+      const category = ITEM_CATEGORIES.find((c) => c.id === filterId);
       if (category) {
-        items = items.filter(i => i.tags.some(t => category.tags.includes(t)));
+        items = items.filter((i) => i.tags.some((t) => category.tags.includes(t)));
       }
     }
     return items;
@@ -103,14 +111,14 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     const item = this.previewedItem();
     if (!item?.from?.length) return [];
     const byId = this.ddragon.rawItemsById();
-    return item.from.map(id => byId.get(id)).filter((i): i is Item => i !== undefined);
+    return item.from.map((id) => byId.get(id)).filter((i): i is Item => i !== undefined);
   });
 
   protected readonly parentSuggestions = computed((): Item[] => {
     const item = this.previewedItem();
     if (!item?.into?.length) return [];
     const byId = this.ddragon.rawItemsById();
-    return item.into.map(id => byId.get(id)).filter((i): i is Item => i !== undefined);
+    return item.into.map((id) => byId.get(id)).filter((i): i is Item => i !== undefined);
   });
 
   protected readonly previewedStats = computed((): string[] => {
@@ -121,9 +129,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
       .map(([key, value]) => {
         const meta = STAT_LABELS[key];
         if (!meta) return null;
-        const formatted = meta.percent
-          ? `${Math.round((value ?? 0) * 100)}%`
-          : `${value}`;
+        const formatted = meta.percent ? `${Math.round((value ?? 0) * 100)}%` : `${value}`;
         return `+${formatted} ${meta.name}`;
       })
       .filter((s): s is string => s !== null);
@@ -149,7 +155,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
   }
 
   protected clearSlot(index: number): void {
-    this.localItems.update(items => {
+    this.localItems.update((items) => {
       const next = [...items];
       next[index] = null;
       return next;
@@ -178,12 +184,12 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     const item = this.previewedItem();
     if (!item) return;
     const index = this.activeSlotIndex();
-    this.localItems.update(items => {
+    this.localItems.update((items) => {
       const next = [...items];
       next[index] = item;
       return next;
     });
-    const nextEmpty = this.localItems().findIndex(i => i === null);
+    const nextEmpty = this.localItems().findIndex((i) => i === null);
     if (nextEmpty !== -1) {
       this.activeSlotIndex.set(nextEmpty);
     }

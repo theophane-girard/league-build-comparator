@@ -42,16 +42,17 @@
       <!-- Search -->
       <div class="p-3 border-b border-border">
         <div class="relative">
-          <i z-icon zType="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"></i>
-          <input
-            z-input
-            type="text"
-            placeholder="Search items..."
-            [value]="searchText()"
-            (input)="onSearchInput($event)"
-            class="pl-9 w-full"
-            aria-label="Search items"
-          />
+          <ng-template #search><z-icon zType="search" /></ng-template>
+
+          <z-input-group [zAddonBefore]="search" [zAddonAfter]="filteredItems().length + ' results'" class="mb-4">
+            <input z-input
+                   type="text"
+                   placeholder="Search items..."
+                   [value]="searchText()"
+                   (input)="onSearchInput($event)"
+                   class="pl-9 w-full"
+                   aria-label="Search items" />
+          </z-input-group>
         </div>
       </div>
 
