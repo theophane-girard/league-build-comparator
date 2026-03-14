@@ -30,7 +30,6 @@ interface ItemCategory {
 }
 
 const ITEM_CATEGORIES: ItemCategory[] = [
-  { id: 'all', label: 'All', icon: 'layout-dashboard', tags: [] },
   { id: 'damage', label: 'Attack Damage', icon: 'swords', tags: ['Damage'] },
   { id: 'magic', label: 'Ability Power', icon: 'sparkles', tags: ['SpellDamage'] },
   { id: 'defense', label: 'Defense', icon: 'shield', tags: ['Armor', 'SpellBlock'] },
@@ -89,7 +88,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
   protected readonly localItems = signal<(Item | null)[]>([null, null, null, null, null, null]);
   protected readonly previewedItem = signal<Item | null>(null);
   protected readonly searchText = signal('');
-  protected readonly activeFilter = signal('all');
+  protected readonly activeFilters = signal<Set<string>>(new Set());
 
   protected readonly filteredItems = computed(() => {
     let items = this.ddragon.items();
@@ -97,12 +96,12 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     if (search) {
       items = items.filter((i) => i.name.toLowerCase().includes(search));
     }
-    const filterId = this.activeFilter();
-    if (filterId !== 'all') {
-      const category = ITEM_CATEGORIES.find((c) => c.id === filterId);
-      if (category) {
-        items = items.filter((i) => i.tags.some((t) => category.tags.includes(t)));
-      }
+    const filters = this.activeFilters();
+    if (filters.size > 0) {
+      const activeTags = ITEM_CATEGORIES
+        .filter((c) => filters.has(c.id))
+        .flatMap((c) => c.tags);
+      items = items.filter((i) => i.tags.some((t) => activeTags.includes(t)));
     }
     return items;
   });
@@ -162,14 +161,24 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     });
   }
 
-  protected setFilter(filterId: string): void {
-    this.activeFilter.set(filterId);
-    this.searchText.set('');
+  protected toggleFilter(filterId: string): void {
+    this.activeFilters.update((filters) => {
+      const next = new Set(filters);
+      if (next.has(filterId)) {
+        next.delete(filterId);
+      } else {
+        next.add(filterId);
+      }
+      return next;
+    });
+  }
+
+  protected clearFilters(): void {
+    this.activeFilters.set(new Set());
   }
 
   protected onSearchInput(event: Event): void {
     this.searchText.set((event.target as HTMLInputElement).value);
-    this.activeFilter.set('all');
   }
 
   protected selectItemFromList(item: Item): void {
