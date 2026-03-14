@@ -64,6 +64,11 @@ export class BuildCalculatorService {
     this.activeSlotIndex.set(null);
   }
 
+  applyItems(items: (Item | null)[]): void {
+    this.selectedItems.set([...items]);
+    this.activeSlotIndex.set(null);
+  }
+
   clearBuild(): void {
     this.selectedChampion.set(null);
     this.selectedLevel.set(1);

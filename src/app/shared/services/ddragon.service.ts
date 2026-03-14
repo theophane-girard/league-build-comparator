@@ -46,6 +46,7 @@ export class DdragonService {
   readonly version = signal<string | null>(null);
   readonly champions = signal<ChampionSummary[]>([]);
   readonly items = signal<Item[]>([]);
+  readonly rawItemsById = signal<Map<string, Item>>(new Map());
   readonly championDetailCache = signal<Map<string, ChampionDetail>>(new Map());
 
   private versionLoaded = false;
@@ -121,6 +122,24 @@ export class DdragonService {
         `${BASE_URL}/cdn/${v}/data/en_US/item.json`
       )
     );
+    const mapEntry = ([id, item]: [string, ItemRaw]): Item => ({
+      id,
+      name: item.name,
+      description: item.description,
+      plaintext: item.plaintext,
+      image: item.image,
+      gold: item.gold,
+      tags: item.tags ?? [],
+      stats: item.stats,
+      depth: item.depth,
+      from: item.from,
+      into: item.into,
+    });
+
+    const rawById = new Map<string, Item>();
+    Object.entries(data.data).forEach(entry => rawById.set(entry[0], mapEntry(entry)));
+    this.rawItemsById.set(rawById);
+
     const list: Item[] = Object.entries(data.data)
       .filter(([, item]) =>
         item.gold.purchasable &&
@@ -129,19 +148,7 @@ export class DdragonService {
         item.tags?.length > 0 &&
         Object.keys(item.stats).length > 0
       )
-      .map(([id, item]) => ({
-        id,
-        name: item.name,
-        description: item.description,
-        plaintext: item.plaintext,
-        image: item.image,
-        gold: item.gold,
-        tags: item.tags,
-        stats: item.stats,
-        depth: item.depth,
-        from: item.from,
-        into: item.into,
-      }));
+      .map(mapEntry);
     this.items.set(list);
     this.itemsLoaded = true;
   }

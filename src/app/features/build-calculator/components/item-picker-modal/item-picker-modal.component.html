@@ -1,0 +1,262 @@
+<div
+  cdkTrapFocus
+  cdkTrapFocusAutoCapture
+  class="fixed inset-0 z-50 flex flex-col bg-background"
+  role="dialog"
+  aria-modal="true"
+  aria-label="Item picker"
+>
+
+  <!-- ── Header: 6 slots + close ── -->
+  <header class="flex items-center justify-between gap-4 px-6 py-4 border-b border-border shrink-0">
+    <div class="flex items-center gap-3" role="group" aria-label="Item slots">
+      @for (item of localItems(); track $index) {
+        <div [class]="$index === activeSlotIndex() ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''">
+          <app-item-slot
+            [item]="item"
+            [index]="$index"
+            (slotClick)="setActiveSlot($event)"
+            (clearClick)="clearSlot($event)"
+          />
+        </div>
+      }
+    </div>
+    <button
+      type="button"
+      class="flex items-center justify-center w-9 h-9 rounded-md border border-border
+             text-muted-foreground hover:text-foreground hover:bg-muted transition-colors
+             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      aria-label="Close item picker"
+      (click)="close()"
+    >
+      <i z-icon zType="x"></i>
+    </button>
+  </header>
+
+  <!-- ── Body ── -->
+  <div class="flex flex-1 min-h-0">
+
+    <!-- ── Left side panel ── -->
+    <aside class="w-120 flex flex-col border-r border-border shrink-0" aria-label="Item filters and list">
+
+      <!-- Search -->
+      <div class="p-3 border-b border-border">
+        <div class="relative">
+          <i z-icon zType="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none"></i>
+          <input
+            z-input
+            type="text"
+            placeholder="Search items..."
+            [value]="searchText()"
+            (input)="onSearchInput($event)"
+            class="pl-9 w-full"
+            aria-label="Search items"
+          />
+        </div>
+      </div>
+
+      <section class="flex flex-1" aria-label="Item list and filters">
+        <!-- Category filters -->
+        <div class="p-2 border-b border-border flex flex-col gap-0.5" role="group" aria-label="Item categories">
+          @for (cat of categories; track cat.id) {
+            <button
+              type="button"
+              class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              [class]="activeFilter() === cat.id
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+              [attr.aria-pressed]="activeFilter() === cat.id"
+              [attr.aria-label]="cat.label + ' filter'"
+              (click)="setFilter(cat.id)"
+            >
+              <i z-icon [zType]="cat.icon" class="w-4 h-4 shrink-0"></i>
+              <span>{{ cat.label }}</span>
+            </button>
+          }
+        </div>
+
+        <!-- Item grid -->
+        <div class="flex-1 overflow-y-auto p-2" aria-label="Item list">
+          @if (filteredItems().length === 0) {
+            <p class="text-center text-sm text-muted-foreground py-8">No items found</p>
+          } @else {
+            <div class="grid grid-cols-5 gap-1.5">
+              @for (item of filteredItems(); track item.id) {
+                <button
+                  type="button"
+                  class="w-full aspect-square rounded border transition-colors overflow-hidden
+                       focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  [class]="previewedItem()?.id === item.id
+                  ? 'border-primary ring-1 ring-primary'
+                  : 'border-border hover:border-primary/70'"
+                  [attr.aria-label]="item.name + ', cost: ' + item.gold.total + ' gold'"
+                  [attr.aria-pressed]="previewedItem()?.id === item.id"
+                  [title]="item.name"
+                  (click)="selectItemFromList(item)"
+                >
+                  <img
+                    [src]="ddragon.getItemImageUrl(item.id)"
+                    [alt]="item.name"
+                    width="48"
+                    height="48"
+                    class="w-full h-full object-cover"
+                  />
+                </button>
+              }
+            </div>
+          }
+        </div>
+
+      </section>
+
+    </aside>
+
+    <!-- ── Content area ── -->
+    <main class="flex-1 flex flex-col items-center overflow-y-auto p-8" aria-label="Item details">
+
+      @if (previewedItem(); as item) {
+
+        <div class="w-full max-w-md flex flex-col gap-6">
+
+          <!-- Parent suggestions (builds into) -->
+          @if (parentSuggestions().length > 0) {
+            <section aria-label="Builds into">
+              <p class="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Builds Into</p>
+              <div class="flex gap-2 flex-wrap">
+                @for (parent of parentSuggestions(); track parent.id) {
+                  <button
+                    type="button"
+                    class="w-14 h-14 rounded border border-border hover:border-primary/70 transition-colors
+                           overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    [attr.aria-label]="'Preview ' + parent.name"
+                    [title]="parent.name"
+                    (click)="selectItemFromList(parent)"
+                  >
+                    <img
+                      [src]="ddragon.getItemImageUrl(parent.id)"
+                      [alt]="parent.name"
+                      width="56"
+                      height="56"
+                      class="w-full h-full object-cover"
+                    />
+                  </button>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- Item tree (when item has components) -->
+          @if (previewedComponents().length > 0) {
+            <section class="flex flex-col items-center" aria-label="Item recipe">
+              <!-- Main item node -->
+              <div class="flex flex-col items-center">
+                <div class="w-20 h-20 rounded-lg border-2 border-primary overflow-hidden bg-muted">
+                  <img
+                    [src]="ddragon.getItemImageUrl(item.id)"
+                    [alt]="item.name"
+                    width="80"
+                    height="80"
+                    class="w-full h-full object-cover"
+                  />
+                </div>
+                <span class="text-sm text-muted-foreground mt-1">{{ item.gold.total }}</span>
+              </div>
+
+              <!-- Vertical connector -->
+              <div class="w-px h-6 bg-border/60 my-1"></div>
+
+              <!-- Components row -->
+              <div class="flex gap-8" role="group" aria-label="Required components">
+                @for (comp of previewedComponents(); track comp.id) {
+                  <div class="flex flex-col items-center">
+                    <div class="w-px h-6 bg-border/60 mb-1"></div>
+                    <button
+                      type="button"
+                      class="w-14 h-14 rounded border border-border hover:border-primary/70 transition-colors
+                             overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      [attr.aria-label]="'Preview component: ' + comp.name"
+                      [title]="comp.name"
+                      (click)="previewComponent(comp)"
+                    >
+                      <img
+                        [src]="ddragon.getItemImageUrl(comp.id)"
+                        [alt]="comp.name"
+                        width="56"
+                        height="56"
+                        class="w-full h-full object-cover"
+                      />
+                    </button>
+                    <span class="text-xs text-muted-foreground mt-1">{{ comp.gold.total }}</span>
+                  </div>
+                }
+              </div>
+            </section>
+          }
+
+          <!-- ── Item detail card ── -->
+          <section
+            class="rounded-lg border border-border bg-card p-5 flex flex-col gap-4"
+            aria-label="Selected item details"
+          >
+            <!-- Name + image + cost -->
+            <div class="flex items-center gap-3">
+              <div class="w-12 h-12 rounded border border-border overflow-hidden shrink-0">
+                <img
+                  [src]="ddragon.getItemImageUrl(item.id)"
+                  [alt]="item.name"
+                  width="48"
+                  height="48"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+              <div>
+                <h3 class="font-semibold text-base leading-tight">{{ item.name }}</h3>
+                <div class="flex items-center gap-1 mt-0.5">
+                  <i z-icon zType="circle-dollar-sign" class="w-3.5 h-3.5 text-yellow-500"></i>
+                  <span class="text-sm text-muted-foreground">{{ item.gold.total }} gold</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            @if (previewedStats().length > 0) {
+              <ul class="flex flex-col gap-1" aria-label="Item stats">
+                @for (stat of previewedStats(); track stat) {
+                  <li class="text-sm text-foreground">{{ stat }}</li>
+                }
+              </ul>
+            }
+
+            <!-- Plaintext description -->
+            @if (item.plaintext) {
+              <p class="text-sm text-muted-foreground italic border-t border-border pt-3">
+                {{ item.plaintext }}
+              </p>
+            }
+
+            <!-- Add button -->
+            <button
+              z-button
+              type="button"
+              class="w-full mt-1"
+              [attr.aria-label]="'Add ' + item.name + ' to slot ' + (activeSlotIndex() + 1)"
+              (click)="addItem()"
+            >
+              Add
+            </button>
+          </section>
+
+        </div>
+
+      } @else {
+        <!-- Empty state -->
+        <div class="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground" aria-live="polite">
+          <i z-icon zType="search" class="w-12 h-12 opacity-30"></i>
+          <p class="text-sm">Select an item from the list to see details</p>
+        </div>
+      }
+
+    </main>
+  </div>
+</div>

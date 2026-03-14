@@ -58,9 +58,6 @@
           <section aria-label="Items" class="space-y-3">
             <h2 class="text-lg font-semibold">Items</h2>
             <app-item-grid />
-            @if (build.activeSlotIndex() !== null) {
-              <app-item-search />
-            }
           </section>
         }
 
@@ -100,3 +97,11 @@
 
   </div>
 </main>
+
+@if (build.activeSlotIndex() !== null) {
+  <app-item-picker-modal
+    [slotIndex]="build.activeSlotIndex()!"
+    [initialItems]="build.selectedItems()"
+    (closed)="onModalClose($event)"
+  />
+}

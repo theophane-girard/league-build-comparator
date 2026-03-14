@@ -11,10 +11,11 @@ import { ChampionSearchComponent } from '../../components/champion-search/champi
 import { ChampionCardComponent } from '../../components/champion-card/champion-card.component';
 import { LevelSelectorComponent } from '../../components/level-selector/level-selector.component';
 import { ItemGridComponent } from '../../components/item-grid/item-grid.component';
-import { ItemSearchComponent } from '../../components/item-search/item-search.component';
+import { ItemPickerModalComponent } from '../../components/item-picker-modal/item-picker-modal.component';
 import { StatsPanelComponent } from '../../components/stats-panel/stats-panel.component';
 import { SavedBuildsPanelComponent } from '../../components/saved-builds-panel/saved-builds-panel.component';
 import { BuildsComparisonComponent } from '../../components/builds-comparison/builds-comparison.component';
+import type { Item } from '../../models/item.model';
 
 @Component({
   selector: 'app-build-calculator-page',
@@ -26,7 +27,7 @@ import { BuildsComparisonComponent } from '../../components/builds-comparison/bu
     ChampionCardComponent,
     LevelSelectorComponent,
     ItemGridComponent,
-    ItemSearchComponent,
+    ItemPickerModalComponent,
     StatsPanelComponent,
     SavedBuildsPanelComponent,
     BuildsComparisonComponent,
@@ -38,6 +39,10 @@ export class BuildCalculatorPageComponent {
   protected readonly build = inject(BuildCalculatorService);
   protected readonly manager = inject(BuildsManagerService);
   protected readonly theme = inject(ThemeService);
+
+  protected onModalClose(items: (Item | null)[]): void {
+    this.build.applyItems(items);
+  }
 
   protected readonly tabOptions = computed((): SegmentedOption[] => [
     { value: 'builder', label: 'Builder' },
