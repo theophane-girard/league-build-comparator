@@ -7,8 +7,8 @@
   aria-label="Item picker"
 >
 
-  <!-- ── Header: 6 slots + close ── -->
-  <header class="flex items-center justify-between gap-4 px-6 py-4 border-b border-border shrink-0">
+  <!-- ── Header: 6 slots + map filters + close ── -->
+  <header class="flex items-center justify-between gap-6 px-6 py-4 border-b border-border shrink-0">
     <div class="flex items-center gap-3" role="group" aria-label="Item slots">
       @for (item of localItems(); track $index) {
         <div [class]="$index === activeSlotIndex() ? 'ring-2 ring-primary ring-offset-2 ring-offset-background rounded-lg' : ''">
@@ -21,16 +21,39 @@
         </div>
       }
     </div>
-    <button
-      type="button"
-      class="flex items-center justify-center w-9 h-9 rounded-md border border-border
-             text-muted-foreground hover:text-foreground hover:bg-muted transition-colors
-             focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-      aria-label="Close item picker"
-      (click)="close()"
-    >
-      <i z-icon zType="x"></i>
-    </button>
+
+    <div class="flex items-center gap-4">
+      <!-- Map type filters -->
+      <div class="flex items-center gap-1.5" role="group" aria-label="Map filter">
+        @for (map of mapTypes; track map.id) {
+          <button
+            type="button"
+            class="px-3 py-1.5 text-xs font-medium rounded-md border transition-colors
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            [class]="selectedMapId() === map.id
+              ? 'bg-primary text-primary-foreground border-primary'
+              : 'border-border text-muted-foreground hover:bg-muted hover:text-foreground'"
+            [attr.aria-pressed]="selectedMapId() === map.id"
+            [attr.aria-label]="map.label + ' map filter'"
+            (click)="setMapFilter(map.id)"
+          >
+            {{ map.label }}
+          </button>
+        }
+      </div>
+
+      <!-- Close -->
+      <button
+        type="button"
+        class="flex items-center justify-center w-9 h-9 rounded-md border border-border
+               text-muted-foreground hover:text-foreground hover:bg-muted transition-colors
+               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        aria-label="Close item picker"
+        (click)="close()"
+      >
+        <i z-icon zType="x"></i>
+      </button>
+    </div>
   </header>
 
   <!-- ── Body ── -->
@@ -234,21 +257,11 @@
               </div>
             </div>
 
-            <!-- Stats -->
-            @if (previewedStats().length > 0) {
-              <ul class="flex flex-col gap-1" aria-label="Item stats">
-                @for (stat of previewedStats(); track stat) {
-                  <li class="text-sm text-foreground">{{ stat }}</li>
-                }
-              </ul>
-            }
-
-            <!-- Plaintext description -->
-            @if (item.plaintext) {
-              <p class="text-sm text-muted-foreground italic border-t border-border pt-3">
-                {{ item.plaintext }}
-              </p>
-            }
+            <!-- Rich description -->
+            <div
+              class="text-sm leading-relaxed text-muted-foreground border-t border-border pt-3"
+              [innerHTML]="previewedDescription()"
+            ></div>
 
             <!-- Add button -->
             <button

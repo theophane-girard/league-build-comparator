@@ -55,6 +55,7 @@ interface ItemRaw {
   depth?: number;
   from?: string[];
   into?: string[];
+  maps?: Record<string, boolean>;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -153,6 +154,7 @@ export class DdragonService {
       depth: item.depth,
       from: item.from,
       into: item.into,
+      maps: item.maps,
     });
 
     const rawById = new Map<string, Item>();

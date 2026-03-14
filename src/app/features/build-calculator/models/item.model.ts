@@ -42,4 +42,5 @@ export interface Item {
   depth?: number;
   from?: string[];
   into?: string[];
+  maps?: Record<string, boolean>;
 }
