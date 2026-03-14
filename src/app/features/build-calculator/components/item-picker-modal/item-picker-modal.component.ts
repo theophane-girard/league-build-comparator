@@ -216,7 +216,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     return raw
       .replace(/<\/?mainText>/g, '')
       .replace(/<stats>([\s\S]*?)<\/stats>/g,
-        '<div style="margin-bottom:.5rem;display:flex;flex-direction:column;gap:.15rem">$1</div>')
+        '<div style="margin-bottom:.5rem">$1</div>')
       .replace(/<attention>([\s\S]*?)<\/attention>/g,
         '<span style="color:#c89b3c;font-weight:700">$1</span>')
       .replace(/<passive>([\s\S]*?)<\/passive>/g,
