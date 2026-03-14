@@ -10,17 +10,30 @@
         <h1 class="text-3xl font-bold tracking-tight">LoL Build Calculator</h1>
         <p class="text-muted-foreground mt-1">Select a champion, set your level and items to see the final stats.</p>
       </div>
-      <button
-        z-button
-        zType="outline"
-        zSize="sm"
-        type="button"
-        [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
-        [attr.aria-pressed]="theme.isDark()"
-        (click)="theme.toggle()"
-      >
-        <i z-icon [zType]="theme.isDark() ? 'sun' : 'moon'"></i>
-      </button>
+      <div class="flex items-center gap-2">
+        <z-select
+          zSize="sm"
+          zPlaceholder="Language"
+          [zValue]="ddragon.locale()"
+          (zSelectionChange)="onLocaleChange($any($event))"
+          aria-label="Select language"
+        >
+          @for (loc of locales; track loc.code) {
+            <z-select-item [zValue]="loc.code">{{ loc.label }}</z-select-item>
+          }
+        </z-select>
+        <button
+          z-button
+          zType="outline"
+          zSize="sm"
+          type="button"
+          [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+          [attr.aria-pressed]="theme.isDark()"
+          (click)="theme.toggle()"
+        >
+          <i z-icon [zType]="theme.isDark() ? 'sun' : 'moon'"></i>
+        </button>
+      </div>
     </header>
 
     <!-- Tabs -->

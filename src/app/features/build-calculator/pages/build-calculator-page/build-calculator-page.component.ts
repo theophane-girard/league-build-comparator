@@ -4,8 +4,10 @@ import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardSegmentedComponent } from '@/shared/components/segmented';
 import type { SegmentedOption } from '@/shared/components/segmented';
+import { ZardSelectComponent, ZardSelectItemComponent } from '@/shared/components/select';
 import { BuildCalculatorService } from '@/shared/services/build-calculator.service';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
+import { DdragonService, DDRAGON_LOCALES } from '@/shared/services/ddragon.service';
 import { ThemeService } from '@/shared/services/theme.service';
 import { ChampionSearchComponent } from '../../components/champion-search/champion-search.component';
 import { ChampionCardComponent } from '../../components/champion-card/champion-card.component';
@@ -23,6 +25,8 @@ import type { Item } from '../../models/item.model';
     ZardButtonComponent,
     ZardIconComponent,
     ZardSegmentedComponent,
+    ZardSelectComponent,
+    ZardSelectItemComponent,
     ChampionSearchComponent,
     ChampionCardComponent,
     LevelSelectorComponent,
@@ -39,9 +43,15 @@ export class BuildCalculatorPageComponent {
   protected readonly build = inject(BuildCalculatorService);
   protected readonly manager = inject(BuildsManagerService);
   protected readonly theme = inject(ThemeService);
+  protected readonly ddragon = inject(DdragonService);
+  protected readonly locales = DDRAGON_LOCALES;
 
   protected onModalClose(items: (Item | null)[]): void {
     this.build.applyItems(items);
+  }
+
+  protected onLocaleChange(code: string): void {
+    this.ddragon.setLocale(code);
   }
 
   protected readonly tabOptions = computed((): SegmentedOption[] => [

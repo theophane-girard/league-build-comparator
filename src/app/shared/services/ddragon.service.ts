@@ -7,6 +7,24 @@ import type { Item } from '@/features/build-calculator/models/item.model';
 
 const BASE_URL = 'https://ddragon.leagueoflegends.com';
 
+export interface DdragonLocale {
+  code: string;
+  label: string;
+}
+
+export const DDRAGON_LOCALES: DdragonLocale[] = [
+  { code: 'en_US', label: 'English' },
+  { code: 'fr_FR', label: 'Français' },
+  { code: 'de_DE', label: 'Deutsch' },
+  { code: 'es_ES', label: 'Español' },
+  { code: 'it_IT', label: 'Italiano' },
+  { code: 'pt_BR', label: 'Português' },
+  { code: 'ru_RU', label: 'Русский' },
+  { code: 'ko_KR', label: '한국어' },
+  { code: 'ja_JP', label: '日本語' },
+  { code: 'zh_CN', label: '中文' },
+];
+
 interface ChampionSummaryRaw {
   id: string;
   key: string;
@@ -43,6 +61,7 @@ interface ItemRaw {
 export class DdragonService {
   private readonly http = inject(HttpClient);
 
+  readonly locale = signal<string>('en_US');
   readonly version = signal<string | null>(null);
   readonly champions = signal<ChampionSummary[]>([]);
   readonly items = signal<Item[]>([]);
@@ -71,7 +90,7 @@ export class DdragonService {
     const v = await this.loadVersion();
     const data = await firstValueFrom(
       this.http.get<{ data: Record<string, ChampionSummaryRaw> }>(
-        `${BASE_URL}/cdn/${v}/data/en_US/champion.json`
+        `${BASE_URL}/cdn/${v}/data/${this.locale()}/champion.json`
       )
     );
     const list = Object.values(data.data).map(c => ({
@@ -92,7 +111,7 @@ export class DdragonService {
     const v = await this.loadVersion();
     const data = await firstValueFrom(
       this.http.get<{ data: Record<string, ChampionDetailRaw> }>(
-        `${BASE_URL}/cdn/${v}/data/en_US/champion/${id}.json`
+        `${BASE_URL}/cdn/${v}/data/${this.locale()}/champion/${id}.json`
       )
     );
     const raw = data.data[id];
@@ -119,7 +138,7 @@ export class DdragonService {
     const v = await this.loadVersion();
     const data = await firstValueFrom(
       this.http.get<{ data: Record<string, ItemRaw> }>(
-        `${BASE_URL}/cdn/${v}/data/en_US/item.json`
+        `${BASE_URL}/cdn/${v}/data/${this.locale()}/item.json`
       )
     );
     const mapEntry = ([id, item]: [string, ItemRaw]): Item => ({
@@ -151,6 +170,18 @@ export class DdragonService {
       .map(mapEntry);
     this.items.set(list);
     this.itemsLoaded = true;
+  }
+
+  async setLocale(code: string): Promise<void> {
+    if (this.locale() === code) return;
+    this.locale.set(code);
+    this.championsLoaded = false;
+    this.itemsLoaded = false;
+    this.champions.set([]);
+    this.items.set([]);
+    this.rawItemsById.set(new Map());
+    this.championDetailCache.set(new Map());
+    await Promise.all([this.loadChampions(), this.loadItems()]);
   }
 
   getChampionImageUrl(imageFullName: string): string {
