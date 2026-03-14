@@ -1,0 +1,13 @@
+<z-command (zCommandSelected)="onChampionSelect($event.value)" aria-label="Champion search">
+  <z-command-input placeholder="Search champions..." aria-label="Search champions" />
+  <z-command-list aria-label="Champion list">
+    <z-command-empty>No champion found.</z-command-empty>
+    @for (champion of ddragon.champions(); track champion.id) {
+      <z-command-option
+        [zValue]="champion.id"
+        [zLabel]="champion.name"
+        [zCommand]="champion.name"
+      />
+    }
+  </z-command-list>
+</z-command>
