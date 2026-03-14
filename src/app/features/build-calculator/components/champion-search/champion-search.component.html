@@ -1,13 +1,13 @@
-<z-command (zCommandSelected)="onChampionSelect($event.value)" aria-label="Champion search">
-  <z-command-input placeholder="Search champions..." aria-label="Search champions" />
-  <z-command-list aria-label="Champion list">
-    <z-command-empty>No champion found.</z-command-empty>
+@if (ddragon.champions().length > 0) {
+  <z-select
+    zPlaceholder="Select a champion..."
+    aria-label="Champion selection"
+    (zSelectionChange)="onChampionSelect($event)"
+  >
     @for (champion of ddragon.champions(); track champion.id) {
-      <z-command-option
-        [zValue]="champion.id"
-        [zLabel]="champion.name"
-        [zCommand]="champion.name"
-      />
+      <z-select-item [zValue]="champion.id">{{ champion.name }}</z-select-item>
     }
-  </z-command-list>
-</z-command>
+  </z-select>
+} @else {
+  <div class="h-9 w-full rounded-md border bg-muted/30 animate-pulse" aria-busy="true" aria-label="Loading champions..."></div>
+}

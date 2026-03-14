@@ -1,42 +1,96 @@
 <main class="min-h-screen bg-background p-6" aria-label="LoL Build Calculator">
-  <div class="max-w-4xl mx-auto space-y-6">
+  <div class="max-w-5xl mx-auto space-y-6">
 
     <!-- Header -->
-    <header>
-      <h1 class="text-3xl font-bold tracking-tight">LoL Build Calculator</h1>
-      <p class="text-muted-foreground mt-1">Select a champion, set your level and items to see the final stats.</p>
+    <header class="flex items-start justify-between gap-4">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">LoL Build Calculator</h1>
+        <p class="text-muted-foreground mt-1">Select a champion, set your level and items to see the final stats.</p>
+      </div>
+      <button
+        z-button
+        zType="outline"
+        zSize="sm"
+        type="button"
+        [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+        [attr.aria-pressed]="theme.isDark()"
+        (click)="theme.toggle()"
+      >
+        <i z-icon [zType]="theme.isDark() ? 'sun' : 'moon'"></i>
+      </button>
     </header>
 
-    <!-- Champion selection -->
-    <section aria-label="Champion selection" class="space-y-3">
-      <h2 class="text-lg font-semibold">Champion</h2>
-      <app-champion-search />
-      @if (build.selectedChampion()) {
-        <app-champion-card />
-      }
-    </section>
+    <!-- Tabs -->
+    <z-segmented
+      [zOptions]="tabOptions()"
+      [zDefaultValue]="manager.activeTab()"
+      zAriaLabel="Page navigation"
+      (zChange)="manager.switchTab($any($event))"
+    />
 
-    <!-- Level selector -->
-    @if (build.selectedChampion()) {
-      <section aria-label="Level selection">
-        <app-level-selector />
-      </section>
-    }
+    <!-- Builder tab -->
+    @if (manager.activeTab() === 'builder') {
+      <div class="space-y-6">
 
-    <!-- Items -->
-    @if (build.selectedChampion()) {
-      <section aria-label="Items" class="space-y-3">
-        <h2 class="text-lg font-semibold">Items</h2>
-        <app-item-grid />
-        @if (build.activeSlotIndex() !== null) {
-          <app-item-search />
+        <!-- Champion selection -->
+        <section aria-label="Champion selection" class="space-y-3">
+          <h2 class="text-lg font-semibold">Champion</h2>
+          <app-champion-search />
+          @if (build.selectedChampion()) {
+            <app-champion-card />
+          }
+        </section>
+
+        <!-- Level selector -->
+        @if (build.selectedChampion()) {
+          <section aria-label="Level selection">
+            <app-level-selector />
+          </section>
         }
-      </section>
+
+        <!-- Items -->
+        @if (build.selectedChampion()) {
+          <section aria-label="Items" class="space-y-3">
+            <h2 class="text-lg font-semibold">Items</h2>
+            <app-item-grid />
+            @if (build.activeSlotIndex() !== null) {
+              <app-item-search />
+            }
+          </section>
+        }
+
+        <!-- Stats panel + Save -->
+        @if (build.finalStats()) {
+          <app-stats-panel />
+          <div class="flex justify-end">
+            <button
+              z-button
+              type="button"
+              [attr.aria-label]="'Save current build'"
+              (click)="manager.saveBuild()"
+            >
+              <i z-icon zType="save"></i>
+              Save Build
+            </button>
+          </div>
+        }
+
+      </div>
     }
 
-    <!-- Stats panel -->
-    @if (build.finalStats()) {
-      <app-stats-panel />
+    <!-- Comparison tab -->
+    @if (manager.activeTab() === 'comparison') {
+      <div class="space-y-6">
+        <section aria-label="Saved builds" class="space-y-3">
+          <h2 class="text-lg font-semibold">Saved Builds</h2>
+          <app-saved-builds-panel />
+        </section>
+
+        <section aria-label="Stats comparison" class="space-y-3">
+          <h2 class="text-lg font-semibold">Stats Comparison</h2>
+          <app-builds-comparison />
+        </section>
+      </div>
     }
 
   </div>

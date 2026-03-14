@@ -1,31 +1,18 @@
-<div class="border rounded-lg bg-card shadow-lg overflow-hidden" role="dialog" aria-label="Item picker" aria-modal="true">
-  <div class="flex items-center justify-between px-3 pt-3">
-    <p class="text-sm font-medium">
-      Select item for slot {{ (build.activeSlotIndex() ?? 0) + 1 }}
-    </p>
-    <button
-      z-button
-      zType="ghost"
-      zSize="sm"
-      type="button"
-      aria-label="Close item picker"
-      (click)="build.closeItemPicker()"
+<div class="space-y-2">
+  <p class="text-sm font-medium">
+    Select item for slot {{ (build.activeSlotIndex() ?? 0) + 1 }}
+  </p>
+  @if (ddragon.items().length > 0) {
+    <z-select
+      zPlaceholder="Select an item..."
+      aria-label="Item selection"
+      (zSelectionChange)="onItemSelect($event)"
     >
-      <i z-icon zType="x"></i>
-    </button>
-  </div>
-  <z-command (zCommandSelected)="onItemSelect($event.value)" aria-label="Item search">
-    <z-command-input placeholder="Search items..." aria-label="Search items" />
-    <z-command-list class="max-h-64" aria-label="Item list">
-      <z-command-empty>No item found.</z-command-empty>
       @for (item of ddragon.items(); track item.id) {
-        <z-command-option
-          [zValue]="item.id"
-          [zLabel]="item.name"
-          [zCommand]="item.name"
-        >
-        </z-command-option>
+        <z-select-item [zValue]="item.id">{{ item.name }}</z-select-item>
       }
-    </z-command-list>
-  </z-command>
+    </z-select>
+  } @else {
+    <div class="h-9 w-full rounded-md border bg-muted/30 animate-pulse" aria-busy="true" aria-label="Loading items..."></div>
+  }
 </div>

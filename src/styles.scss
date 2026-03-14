@@ -130,6 +130,25 @@
   }
 }
 
+/* AG Grid — best/worst value cell highlighting */
+.ag-best-value {
+  background-color: oklch(0.85 0.12 145 / 0.35) !important;
+  color: oklch(0.35 0.12 145) !important;
+  font-weight: 600;
+}
+.dark .ag-best-value {
+  background-color: oklch(0.35 0.1 145 / 0.4) !important;
+  color: oklch(0.75 0.15 145) !important;
+}
+.ag-worst-value {
+  background-color: oklch(0.85 0.12 25 / 0.25) !important;
+  color: oklch(0.45 0.15 25) !important;
+}
+.dark .ag-worst-value {
+  background-color: oklch(0.35 0.1 25 / 0.4) !important;
+  color: oklch(0.75 0.15 25) !important;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
