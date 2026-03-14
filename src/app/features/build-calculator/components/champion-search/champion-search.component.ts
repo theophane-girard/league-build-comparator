@@ -1,25 +1,38 @@
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
 
-import { ZardSelectImports } from '@/shared/components/select';
+import { ZardComboboxComponent, type ZardComboboxOption } from '@/shared/components/combobox';
 import { BuildCalculatorService } from '@/shared/services/build-calculator.service';
 import { DdragonService } from '@/shared/services/ddragon.service';
 
 @Component({
   selector: 'app-champion-search',
-  imports: [...ZardSelectImports],
+  imports: [ZardComboboxComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './champion-search.component.html',
+  template: `
+    <z-combobox
+      zWidth="full"
+      placeholder="Select a champion..."
+      searchPlaceholder="Search champions..."
+      ariaLabel="Champion selection"
+      [options]="options()"
+      (zValueChange)="onSelect($event)"
+    />
+  `,
 })
 export class ChampionSearchComponent implements OnInit {
-  protected readonly ddragon = inject(DdragonService);
-  protected readonly build = inject(BuildCalculatorService);
+  private readonly ddragon = inject(DdragonService);
+  private readonly build = inject(BuildCalculatorService);
+
+  protected readonly options = computed((): ZardComboboxOption[] =>
+    this.ddragon.champions().map(c => ({ value: c.id, label: c.name })),
+  );
 
   async ngOnInit(): Promise<void> {
     await this.ddragon.loadChampions();
   }
 
-  async onChampionSelect(value: string | string[]): Promise<void> {
-    const id = value as string;
+  async onSelect(id: string | null): Promise<void> {
+    if (!id) return;
     const detail = await this.ddragon.loadChampionDetail(id);
     this.build.selectChampion(detail);
   }
