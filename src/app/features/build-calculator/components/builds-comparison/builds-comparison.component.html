@@ -13,4 +13,10 @@
     [suppressCellFocus]="false"
     aria-label="Builds comparison table"
   />
+
+  @if (chartConfig(); as cfg) {
+    <div class="rounded-lg border p-4 mt-6" style="height: 360px;" role="region" aria-label="Stat comparison chart">
+      <apps-chart [config]="cfg" class="h-full" />
+    </div>
+  }
 }

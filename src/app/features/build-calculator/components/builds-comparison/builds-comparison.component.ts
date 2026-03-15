@@ -7,9 +7,11 @@ import {
   type CellClassParams,
   themeQuartz,
 } from 'ag-grid-community';
+import type { ChartConfiguration } from 'chart.js';
 
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { ThemeService } from '@/shared/services/theme.service';
+import { ChartComponent } from '@/shared/components/chart/chart.component';
 import type { SavedBuild } from '../../models/build.model';
 
 type StatFormat = 'integer' | 'decimal' | 'percent';
@@ -47,7 +49,7 @@ function formatValue(value: number, format: StatFormat): string {
 
 @Component({
   selector: 'app-builds-comparison',
-  imports: [AgGridAngular],
+  imports: [AgGridAngular, ChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './builds-comparison.component.html',
 })
@@ -86,8 +88,8 @@ export class BuildsComparisonComponent {
 
     const buildCols: ColDef[] = builds.map(build => ({
       field: build.id,
-      headerName: `${build.champion.name} · Lvl ${build.level}`,
-      headerTooltip: build.name,
+      headerName: build.name,
+      headerTooltip: `${build.champion.name} · Lvl ${build.level}`,
       minWidth: 160,
       sortable: false,
       valueFormatter: (params: { value: number; data: ComparisonRow }) =>
@@ -101,6 +103,69 @@ export class BuildsComparisonComponent {
     }));
 
     return [statCol, ...buildCols];
+  });
+
+  private static readonly CHART_COLORS = [
+    '#36A2EB',
+    '#FF6384',
+    '#FFCE56',
+    '#4BC0C0',
+    '#9966FF',
+    '#FF9F40',
+  ];
+
+  protected readonly chartConfig = computed((): ChartConfiguration<'bar'> | null => {
+    const builds = this.manager.savedBuilds();
+    if (builds.length < 2) return null;
+    const isDark = this.theme.isDark();
+    const textColor = isDark ? '#e5e7eb' : '#374151';
+    const gridColor = isDark ? '#374151' : '#e5e7eb';
+
+    const datasets = builds.map((build, i) => ({
+      label: build.name,
+      data: STAT_DEFS.map(def => {
+        const statValues = builds.map(b => b.finalStats[def.key] as number);
+        const max = Math.max(...statValues);
+        return max === 0 ? 0 : Math.round(((build.finalStats[def.key] as number) / max) * 100);
+      }),
+      backgroundColor: BuildsComparisonComponent.CHART_COLORS[i % BuildsComparisonComponent.CHART_COLORS.length],
+      borderRadius: 4,
+    }));
+
+    return {
+      type: 'bar',
+      data: {
+        labels: STAT_DEFS.map(def => def.label),
+        datasets,
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { labels: { color: textColor } },
+          tooltip: {
+            callbacks: {
+              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            ticks: { color: textColor },
+            grid: { color: gridColor },
+          },
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              color: textColor,
+              callback: value => `${value}%`,
+            },
+            grid: { color: gridColor },
+          },
+        },
+      },
+    };
   });
 
   protected readonly defaultColDef: ColDef = {
