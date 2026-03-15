@@ -8,7 +8,6 @@ export class BuildsManagerService {
   private readonly buildCalc = inject(BuildCalculatorService);
 
   readonly savedBuilds = signal<SavedBuild[]>([]);
-  readonly builderModalOpen = signal(false);
 
   readonly canSave = computed(
     () => this.buildCalc.selectedChampion() !== null && this.buildCalc.finalStats() !== null,
@@ -16,19 +15,13 @@ export class BuildsManagerService {
 
   readonly buildCount = computed(() => this.savedBuilds().length);
 
-  openBuilderModal(prefillBuild?: SavedBuild): void {
+  openNewBuild(prefillBuild?: SavedBuild): void {
     if (prefillBuild) {
       this.buildCalc.prefillFromBuild(prefillBuild);
     } else {
-      this.buildCalc.clearBuild();
+      this.buildCalc.clearItems();
     }
-    this.builderModalOpen.set(true);
-  }
-
-  closeBuilderModal(): void {
-    this.builderModalOpen.set(false);
-    this.buildCalc.closeItemPicker();
-    this.buildCalc.clearBuild();
+    this.buildCalc.openItemPicker(0);
   }
 
   saveBuild(): void {
@@ -48,7 +41,6 @@ export class BuildsManagerService {
       finalStats,
     };
     this.savedBuilds.update(list => [...list, build]);
-    this.closeBuilderModal();
   }
 
   removeBuild(id: string): void {

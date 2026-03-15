@@ -7,10 +7,12 @@ import { BuildCalculatorService } from '@/shared/services/build-calculator.servi
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { DdragonService, DDRAGON_LOCALES } from '@/shared/services/ddragon.service';
 import { ThemeService } from '@/shared/services/theme.service';
+import { ChampionSearchComponent } from '../../components/champion-search/champion-search.component';
+import { ChampionCardComponent } from '../../components/champion-card/champion-card.component';
+import { LevelSelectorComponent } from '../../components/level-selector/level-selector.component';
 import { ItemPickerModalComponent } from '../../components/item-picker-modal/item-picker-modal.component';
 import { SavedBuildsPanelComponent } from '../../components/saved-builds-panel/saved-builds-panel.component';
 import { BuildsComparisonComponent } from '../../components/builds-comparison/builds-comparison.component';
-import { BuilderModalComponent } from '../../components/builder-modal/builder-modal.component';
 import type { Item } from '../../models/item.model';
 
 @Component({
@@ -20,10 +22,12 @@ import type { Item } from '../../models/item.model';
     ZardIconComponent,
     ZardSelectComponent,
     ZardSelectItemComponent,
+    ChampionSearchComponent,
+    ChampionCardComponent,
+    LevelSelectorComponent,
     ItemPickerModalComponent,
     SavedBuildsPanelComponent,
     BuildsComparisonComponent,
-    BuilderModalComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './build-calculator-page.component.html',
@@ -37,6 +41,12 @@ export class BuildCalculatorPageComponent {
 
   protected onModalClose(items: (Item | null)[]): void {
     this.build.applyItems(items);
+  }
+
+  protected onBuildSaved(items: (Item | null)[]): void {
+    this.build.applyItems(items);
+    this.manager.saveBuild();
+    this.build.closeItemPicker();
   }
 
   protected onLocaleChange(code: string): void {

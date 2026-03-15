@@ -92,8 +92,10 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
 
   readonly slotIndex = input.required<number>();
   readonly initialItems = input.required<(Item | null)[]>();
+  readonly canSaveBuild = input<boolean>(false);
 
   readonly closed = output<(Item | null)[]>();
+  readonly buildSaved = output<(Item | null)[]>();
 
   protected readonly categories = ITEM_CATEGORIES;
   protected readonly mapTypes = MAP_TYPES;
@@ -276,6 +278,10 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     if (nextEmpty !== -1) {
       this.activeSlotIndex.set(nextEmpty);
     }
+  }
+
+  protected saveBuildClick(): void {
+    this.buildSaved.emit(this.localItems());
   }
 
   protected close(): void {

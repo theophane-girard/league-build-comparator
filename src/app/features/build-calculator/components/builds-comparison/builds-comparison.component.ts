@@ -42,7 +42,8 @@ const STAT_DEFS: StatDef[] = [
   { key: 'attackRange', label: 'Attack Range', format: 'integer' },
 ];
 
-function formatValue(value: number, format: StatFormat): string {
+function formatValue(value: number | undefined, format: StatFormat): string {
+  if (value == null) return '—';
   if (format === 'decimal') return value.toFixed(2);
   if (format === 'percent') return Math.round(value) + '%';
   return Math.round(value).toString();
@@ -78,7 +79,7 @@ export class BuildsComparisonComponent {
     return STAT_DEFS.map(def => {
       const row: ComparisonRow = { stat: def.label, format: def.format };
       for (const build of builds) {
-        row[build.id] = build.finalStats[def.key] as number;
+        row[build.id] = (build.finalStats[def.key] as number) ?? 0;
       }
       return row;
     });

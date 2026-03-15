@@ -42,6 +42,19 @@
         }
       </div>
 
+      <!-- Save build (only in new-build mode) -->
+      @if (canSaveBuild()) {
+        <button
+          z-button
+          type="button"
+          aria-label="Save build"
+          (click)="saveBuildClick()"
+        >
+          <i z-icon zType="save"></i>
+          Save Build
+        </button>
+      }
+
       <!-- Close -->
       <button
         type="button"

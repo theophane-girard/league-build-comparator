@@ -35,6 +35,16 @@
       </header>
     </div>
 
+    <!-- Champion & level (shared across all builds) -->
+    <section aria-label="Champion and level selection" class="space-y-3">
+      <h2 class="text-lg font-semibold">Champion</h2>
+      <app-champion-search />
+      @if (build.selectedChampion()) {
+        <app-champion-card />
+        <app-level-selector />
+      }
+    </section>
+
     <!-- Saved builds -->
     <section aria-label="Saved builds" class="space-y-3">
       <h2 class="text-lg font-semibold">Builds</h2>
@@ -50,14 +60,12 @@
   </div>
 </main>
 
-@if (manager.builderModalOpen()) {
-  <app-builder-modal />
-}
-
 @if (build.activeSlotIndex() !== null) {
   <app-item-picker-modal
     [slotIndex]="build.activeSlotIndex()!"
     [initialItems]="build.selectedItems()"
+    [canSaveBuild]="!!build.selectedChampion()"
     (closed)="onModalClose($event)"
+    (buildSaved)="onBuildSaved($event)"
   />
 }
