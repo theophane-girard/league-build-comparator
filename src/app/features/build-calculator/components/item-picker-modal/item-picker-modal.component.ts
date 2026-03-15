@@ -178,6 +178,8 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
 
   protected setActiveSlot(index: number): void {
     this.activeSlotIndex.set(index);
+    const item = this.localItems()[index];
+    this.previewedItem.set(item ?? null);
   }
 
   protected clearSlot(index: number): void {
@@ -259,25 +261,21 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
 
   protected selectItemFromList(item: Item): void {
     this.previewedItem.set(item);
+    this.placeInActiveSlot(item);
   }
 
   protected previewComponent(comp: Item): void {
     this.previewedItem.set(comp);
+    this.placeInActiveSlot(comp);
   }
 
-  protected addItem(): void {
-    const item = this.previewedItem();
-    if (!item) return;
+  private placeInActiveSlot(item: Item): void {
     const index = this.activeSlotIndex();
     this.localItems.update((items) => {
       const next = [...items];
       next[index] = item;
       return next;
     });
-    const nextEmpty = this.localItems().findIndex((i) => i === null);
-    if (nextEmpty !== -1) {
-      this.activeSlotIndex.set(nextEmpty);
-    }
   }
 
   protected saveBuildClick(): void {

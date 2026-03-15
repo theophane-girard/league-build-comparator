@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   colorSchemeDark,
@@ -12,7 +12,6 @@ import type { ChartConfiguration } from 'chart.js';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { ThemeService } from '@/shared/services/theme.service';
 import { ChartComponent } from '@/shared/components/chart/chart.component';
-import { ZardSelectImports } from '@/shared/components/select/select.imports';
 import type { SavedBuild } from '../../models/build.model';
 
 type StatFormat = 'integer' | 'decimal' | 'percent';
@@ -29,7 +28,7 @@ interface StatDef {
   format: StatFormat;
 }
 
-const STAT_DEFS: StatDef[] = [
+export const STAT_DEFS: StatDef[] = [
   { key: 'hp', label: 'HP', format: 'integer' },
   { key: 'mp', label: 'Mana', format: 'integer' },
   { key: 'attackDamage', label: 'Attack Damage', format: 'integer' },
@@ -51,7 +50,7 @@ function formatValue(value: number | undefined, format: StatFormat): string {
 
 @Component({
   selector: 'app-builds-comparison',
-  imports: [AgGridAngular, ChartComponent, ZardSelectImports],
+  imports: [AgGridAngular, ChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './builds-comparison.component.html',
 })
@@ -59,9 +58,7 @@ export class BuildsComparisonComponent {
   protected readonly manager = inject(BuildsManagerService);
   protected readonly theme = inject(ThemeService);
 
-  protected readonly selectedStatKeys = signal<string[]>(STAT_DEFS.map(d => d.key));
-
-  protected readonly statOptions = STAT_DEFS.map(d => ({ value: d.key, label: d.label }));
+  readonly selectedStatKeys = input<string[]>(STAT_DEFS.map(d => d.key));
 
   protected readonly filteredStatDefs = computed(() => {
     const keys = this.selectedStatKeys();
@@ -76,7 +73,7 @@ export class BuildsComparisonComponent {
 
   protected readonly rowData = computed((): ComparisonRow[] => {
     const builds = this.manager.savedBuilds();
-    return STAT_DEFS.map(def => {
+    return this.filteredStatDefs().map(def => {
       const row: ComparisonRow = { stat: def.label, format: def.format };
       for (const build of builds) {
         row[build.id] = (build.finalStats[def.key] as number) ?? 0;

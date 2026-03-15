@@ -53,8 +53,22 @@
 
     <!-- Stats comparison -->
     <section aria-label="Stats comparison" class="space-y-3">
-      <h2 class="text-lg font-semibold">Stats Comparison</h2>
-      <app-builds-comparison />
+      <div class="flex items-center gap-3">
+        <h2 class="text-lg font-semibold shrink-0">Stats Comparison</h2>
+        <z-select
+          [zMultiple]="true"
+          [zValue]="selectedStatKeys()"
+          zPlaceholder="Filter stats..."
+          aria-label="Filter stats to display"
+          (zSelectionChange)="selectedStatKeys.set($any($event))"
+          class="min-w-56"
+        >
+          @for (opt of statOptions; track opt.value) {
+            <z-select-item [zValue]="opt.value">{{ opt.label }}</z-select-item>
+          }
+        </z-select>
+      </div>
+      <app-builds-comparison [selectedStatKeys]="selectedStatKeys()" />
     </section>
 
   </div>

@@ -1,8 +1,9 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardSelectComponent, ZardSelectItemComponent } from '@/shared/components/select';
+import { STAT_DEFS } from '../../components/builds-comparison/builds-comparison.component';
 import { BuildCalculatorService } from '@/shared/services/build-calculator.service';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { DdragonService, DDRAGON_LOCALES } from '@/shared/services/ddragon.service';
@@ -38,6 +39,8 @@ export class BuildCalculatorPageComponent {
   protected readonly theme = inject(ThemeService);
   protected readonly ddragon = inject(DdragonService);
   protected readonly locales = DDRAGON_LOCALES;
+  protected readonly statOptions = STAT_DEFS.map(d => ({ value: d.key, label: d.label }));
+  protected readonly selectedStatKeys = signal<string[]>(STAT_DEFS.map(d => d.key));
 
   protected onModalClose(items: (Item | null)[]): void {
     this.build.applyItems(items);

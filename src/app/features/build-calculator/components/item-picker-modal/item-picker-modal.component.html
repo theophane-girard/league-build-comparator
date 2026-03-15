@@ -51,7 +51,7 @@
           (click)="saveBuildClick()"
         >
           <i z-icon zType="save"></i>
-          Save Build
+          Add Build
         </button>
       }
 
@@ -276,16 +276,6 @@
               [innerHTML]="previewedDescription()"
             ></div>
 
-            <!-- Add button -->
-            <button
-              z-button
-              type="button"
-              class="w-full mt-1"
-              [attr.aria-label]="'Add ' + item.name + ' to slot ' + (activeSlotIndex() + 1)"
-              (click)="addItem()"
-            >
-              Add
-            </button>
           </section>
 
         </div>
