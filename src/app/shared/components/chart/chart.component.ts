@@ -73,15 +73,33 @@ export class ChartComponent<Type extends ChartType> implements AfterViewInit, On
     config: ChartConfiguration<Type, DefaultDataPoint<Type>>,
     theme: ChartTheme,
   ): ChartConfiguration<Type, DefaultDataPoint<Type>> {
-    const datasets = (config.data?.datasets ?? []).map((ds, i) => ({
-      backgroundColor: theme.datasetColors[i % theme.datasetColors.length],
-      ...ds,
-    }));
+    const datasets = (config.data?.datasets ?? []).map((ds, i) => {
+      const color = theme.datasetColors[i % theme.datasetColors.length];
+      return {
+        backgroundColor: `color-mix(in oklch, ${color} 75%, transparent)`,
+        borderColor: color,
+        borderWidth: 2,
+        ...ds,
+      };
+    });
 
     const themeOptions = {
+      animation: {
+        duration: 400,
+        easing: 'easeInOutQuart',
+      },
       plugins: {
         legend: {
-          labels: { color: theme.legendColor },
+          position: 'top',
+          align: 'start',
+          labels: {
+            color: theme.legendColor,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            padding: 20,
+            boxWidth: 8,
+            boxHeight: 8,
+          },
         },
         tooltip: {
           backgroundColor: theme.tooltipBackgroundColor,
@@ -89,17 +107,35 @@ export class ChartComponent<Type extends ChartType> implements AfterViewInit, On
           borderWidth: 1,
           titleColor: theme.tooltipTitleColor,
           bodyColor: theme.tooltipBodyColor,
+          cornerRadius: 8,
+          padding: 12,
+          boxPadding: 6,
+          usePointStyle: true,
         },
       },
       scales: {
         x: {
-          ticks: { color: theme.tickColor },
-          grid: { color: theme.gridColor },
+          border: { display: false },
+          grid: { display: false },
+          ticks: {
+            color: theme.tickColor,
+            font: { size: 12 },
+          },
         },
         y: {
-          ticks: { color: theme.tickColor },
-          grid: { color: theme.gridColor },
+          border: { display: false, dash: [4, 4] },
+          grid: {
+            color: `color-mix(in oklch, ${theme.gridColor} 60%, transparent)`,
+          },
+          ticks: {
+            color: theme.tickColor,
+            font: { size: 12 },
+            padding: 8,
+          },
         },
+      },
+      layout: {
+        padding: { top: 4, right: 8, bottom: 0, left: 0 },
       },
     };
 

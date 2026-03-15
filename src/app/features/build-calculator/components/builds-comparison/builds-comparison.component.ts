@@ -125,7 +125,7 @@ export class BuildsComparisonComponent {
         const max = Math.max(...statValues);
         return max === 0 ? 0 : Math.round(((build.finalStats[def.key] as number) / max) * 100);
       }),
-      borderRadius: 4,
+      borderRadius: 8,
     }));
 
     return {
