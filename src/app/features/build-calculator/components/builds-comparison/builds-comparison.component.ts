@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { AgGridAngular } from 'ag-grid-angular';
 import {
   colorSchemeDark,
@@ -12,6 +12,7 @@ import type { ChartConfiguration } from 'chart.js';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { ThemeService } from '@/shared/services/theme.service';
 import { ChartComponent } from '@/shared/components/chart/chart.component';
+import { ZardSelectImports } from '@/shared/components/select/select.imports';
 import type { SavedBuild } from '../../models/build.model';
 
 type StatFormat = 'integer' | 'decimal' | 'percent';
@@ -49,13 +50,22 @@ function formatValue(value: number, format: StatFormat): string {
 
 @Component({
   selector: 'app-builds-comparison',
-  imports: [AgGridAngular, ChartComponent],
+  imports: [AgGridAngular, ChartComponent, ZardSelectImports],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './builds-comparison.component.html',
 })
 export class BuildsComparisonComponent {
   protected readonly manager = inject(BuildsManagerService);
   protected readonly theme = inject(ThemeService);
+
+  protected readonly selectedStatKeys = signal<string[]>(STAT_DEFS.map(d => d.key));
+
+  protected readonly statOptions = STAT_DEFS.map(d => ({ value: d.key, label: d.label }));
+
+  protected readonly filteredStatDefs = computed(() => {
+    const keys = this.selectedStatKeys();
+    return keys.length ? STAT_DEFS.filter(d => keys.includes(d.key)) : STAT_DEFS;
+  });
 
   protected readonly gridTheme = computed(() =>
     this.theme.isDark()
@@ -120,10 +130,11 @@ export class BuildsComparisonComponent {
     const isDark = this.theme.isDark();
     const textColor = isDark ? '#e5e7eb' : '#374151';
     const gridColor = isDark ? '#374151' : '#e5e7eb';
+    const statDefs = this.filteredStatDefs();
 
     const datasets = builds.map((build, i) => ({
       label: build.name,
-      data: STAT_DEFS.map(def => {
+      data: statDefs.map(def => {
         const statValues = builds.map(b => b.finalStats[def.key] as number);
         const max = Math.max(...statValues);
         return max === 0 ? 0 : Math.round(((build.finalStats[def.key] as number) / max) * 100);
@@ -135,7 +146,7 @@ export class BuildsComparisonComponent {
     return {
       type: 'bar',
       data: {
-        labels: STAT_DEFS.map(def => def.label),
+        labels: statDefs.map(def => def.label),
         datasets,
       },
       options: {

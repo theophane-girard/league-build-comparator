@@ -1,74 +1,15 @@
-@if (manager.savedBuilds().length === 0) {
-  <p class="text-sm text-muted-foreground italic">No saved builds yet. Configure a build and click "Save Build".</p>
-} @else {
-  <div class="flex gap-4 overflow-x-auto pb-2" role="list" aria-label="Saved builds">
-    @for (build of manager.savedBuilds(); track build.id) {
-      <article
-        class="shrink-0 w-52 rounded-lg border bg-card p-3 space-y-2"
-        role="listitem"
-        [attr.aria-label]="build.name"
-      >
-        <!-- Champion info -->
-        <div class="flex items-center gap-2">
-          <img
-            [src]="ddragon.getChampionImageUrl(build.champion.image.full)"
-            [alt]="build.champion.name"
-            width="36"
-            height="36"
-            class="w-9 h-9 rounded object-cover shrink-0"
-          />
-          <div class="min-w-0">
-            <p class="font-semibold text-sm truncate">{{ build.name }}</p>
-            <p class="text-xs text-muted-foreground truncate">{{ build.champion.name }} · Lvl {{ build.level }}</p>
-          </div>
-        </div>
+<div class="flex gap-4 overflow-x-auto pb-2" role="list" aria-label="Saved builds">
+  @for (build of manager.savedBuilds(); track build.id) {
+    <app-saved-build-item [build]="build" />
+  }
 
-        <!-- Items -->
-        <div class="flex gap-1 flex-wrap" aria-label="Items">
-          @for (item of build.items; track $index) {
-            <div
-              class="w-7 h-7 rounded border bg-muted/40 overflow-hidden flex items-center justify-center"
-              [attr.aria-label]="item ? item.name : 'Empty slot'"
-            >
-              @if (item) {
-                <img
-                  [src]="ddragon.getItemImageUrl(item.id)"
-                  [alt]="item.name"
-                  width="28"
-                  height="28"
-                  class="w-full h-full object-cover"
-                />
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-2">
-          <button
-            z-button
-            zType="outline"
-            zSize="sm"
-            type="button"
-            class="flex-1"
-            [attr.aria-label]="'Load ' + build.name + ' into builder'"
-            (click)="manager.loadBuild(build.id)"
-          >
-            <i z-icon zType="arrow-left"></i>
-            Load
-          </button>
-          <button
-            z-button
-            zType="destructive"
-            zSize="sm"
-            type="button"
-            [attr.aria-label]="'Delete ' + build.name"
-            (click)="manager.removeBuild(build.id)"
-          >
-            <i z-icon zType="trash"></i>
-          </button>
-        </div>
-      </article>
-    }
-  </div>
-}
+  <!-- Add build placeholder -->
+  <button
+    type="button"
+    class="shrink-0 w-52 min-h-[136px] rounded-lg border-2 border-dashed border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+    aria-label="Add a new build"
+    (click)="manager.openBuilderModal()"
+  >
+    <i z-icon zType="plus" zSize="lg"></i>
+  </button>
+</div>

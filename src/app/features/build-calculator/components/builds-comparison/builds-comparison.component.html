@@ -14,9 +14,29 @@
     aria-label="Builds comparison table"
   />
 
-  @if (chartConfig(); as cfg) {
-    <div class="rounded-lg border p-4 mt-6" style="height: 360px;" role="region" aria-label="Stat comparison chart">
-      <apps-chart [config]="cfg" class="h-full" />
+  @if (manager.savedBuilds().length >= 2) {
+    <div class="mt-6 flex flex-col gap-3">
+      <div class="flex items-center gap-3">
+        <label id="stat-select-label" class="text-sm font-medium shrink-0">Stats affichées</label>
+        <z-select
+          [zMultiple]="true"
+          [zValue]="selectedStatKeys()"
+          zPlaceholder="Sélectionner des stats..."
+          aria-labelledby="stat-select-label"
+          (zSelectionChange)="selectedStatKeys.set($any($event))"
+          class="min-w-64"
+        >
+          @for (opt of statOptions; track opt.value) {
+            <z-select-item [zValue]="opt.value">{{ opt.label }}</z-select-item>
+          }
+        </z-select>
+      </div>
+
+      @if (chartConfig(); as cfg) {
+        <div class="rounded-lg border p-4" style="height: 360px;" role="region" aria-label="Stat comparison chart">
+          <apps-chart [config]="cfg" class="h-full" />
+        </div>
+      }
     </div>
   }
 }

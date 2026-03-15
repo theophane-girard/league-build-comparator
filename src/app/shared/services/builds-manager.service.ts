@@ -8,13 +8,28 @@ export class BuildsManagerService {
   private readonly buildCalc = inject(BuildCalculatorService);
 
   readonly savedBuilds = signal<SavedBuild[]>([]);
-  readonly activeTab = signal<'builder' | 'comparison'>('builder');
+  readonly builderModalOpen = signal(false);
 
   readonly canSave = computed(
     () => this.buildCalc.selectedChampion() !== null && this.buildCalc.finalStats() !== null,
   );
 
   readonly buildCount = computed(() => this.savedBuilds().length);
+
+  openBuilderModal(prefillBuild?: SavedBuild): void {
+    if (prefillBuild) {
+      this.buildCalc.prefillFromBuild(prefillBuild);
+    } else {
+      this.buildCalc.clearBuild();
+    }
+    this.builderModalOpen.set(true);
+  }
+
+  closeBuilderModal(): void {
+    this.builderModalOpen.set(false);
+    this.buildCalc.closeItemPicker();
+    this.buildCalc.clearBuild();
+  }
 
   saveBuild(): void {
     const champion = this.buildCalc.selectedChampion();
@@ -33,32 +48,10 @@ export class BuildsManagerService {
       finalStats,
     };
     this.savedBuilds.update(list => [...list, build]);
+    this.closeBuilderModal();
   }
 
   removeBuild(id: string): void {
     this.savedBuilds.update(list => list.filter(b => b.id !== id));
-  }
-
-  loadBuild(id: string): void {
-    const build = this.savedBuilds().find(b => b.id === id);
-    if (!build) return;
-
-    this.buildCalc.selectChampion(build.champion);
-    this.buildCalc.setLevel(build.level);
-    build.items.forEach((item, i) => {
-      if (item) {
-        this.buildCalc.setItemInSlot(i, item);
-      } else {
-        this.buildCalc.clearItemInSlot(i);
-      }
-    });
-    // Re-open the picker is not needed; close it just in case
-    this.buildCalc.closeItemPicker();
-
-    this.activeTab.set('builder');
-  }
-
-  switchTab(tab: 'builder' | 'comparison'): void {
-    this.activeTab.set(tab);
   }
 }

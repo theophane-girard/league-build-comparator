@@ -1,22 +1,16 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardIconComponent } from '@/shared/components/icon';
-import { ZardSegmentedComponent } from '@/shared/components/segmented';
-import type { SegmentedOption } from '@/shared/components/segmented';
 import { ZardSelectComponent, ZardSelectItemComponent } from '@/shared/components/select';
 import { BuildCalculatorService } from '@/shared/services/build-calculator.service';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { DdragonService, DDRAGON_LOCALES } from '@/shared/services/ddragon.service';
 import { ThemeService } from '@/shared/services/theme.service';
-import { ChampionSearchComponent } from '../../components/champion-search/champion-search.component';
-import { ChampionCardComponent } from '../../components/champion-card/champion-card.component';
-import { LevelSelectorComponent } from '../../components/level-selector/level-selector.component';
-import { ItemGridComponent } from '../../components/item-grid/item-grid.component';
 import { ItemPickerModalComponent } from '../../components/item-picker-modal/item-picker-modal.component';
-import { StatsPanelComponent } from '../../components/stats-panel/stats-panel.component';
 import { SavedBuildsPanelComponent } from '../../components/saved-builds-panel/saved-builds-panel.component';
 import { BuildsComparisonComponent } from '../../components/builds-comparison/builds-comparison.component';
+import { BuilderModalComponent } from '../../components/builder-modal/builder-modal.component';
 import type { Item } from '../../models/item.model';
 
 @Component({
@@ -24,17 +18,12 @@ import type { Item } from '../../models/item.model';
   imports: [
     ZardButtonComponent,
     ZardIconComponent,
-    ZardSegmentedComponent,
     ZardSelectComponent,
     ZardSelectItemComponent,
-    ChampionSearchComponent,
-    ChampionCardComponent,
-    LevelSelectorComponent,
-    ItemGridComponent,
     ItemPickerModalComponent,
-    StatsPanelComponent,
     SavedBuildsPanelComponent,
     BuildsComparisonComponent,
+    BuilderModalComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './build-calculator-page.component.html',
@@ -53,12 +42,4 @@ export class BuildCalculatorPageComponent {
   protected onLocaleChange(code: string): void {
     this.ddragon.setLocale(code);
   }
-
-  protected readonly tabOptions = computed((): SegmentedOption[] => [
-    { value: 'builder', label: 'Builder' },
-    {
-      value: 'comparison',
-      label: `Comparison${this.manager.buildCount() > 0 ? ` (${this.manager.buildCount()})` : ''}`,
-    },
-  ]);
 }

@@ -1,115 +1,58 @@
 <main class="min-h-screen bg-background p-6" aria-label="LoL Build Calculator">
   <div class="max-w-5xl mx-auto space-y-6">
 
-    <!-- Sticky header + tabs -->
-    <div class="sticky top-0 z-10 bg-background pt-6 pb-4 -mt-6 space-y-4 border-b border-border mb-2">
+    <!-- Sticky header -->
+    <div class="sticky top-0 z-10 bg-background pt-6 pb-4 -mt-6 border-b border-border mb-2">
+      <header class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight">LoL Build Calculator</h1>
+          <p class="text-muted-foreground mt-1">Compare your builds side by side.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <z-select
+            zSize="sm"
+            zPlaceholder="Language"
+            [zValue]="ddragon.locale()"
+            (zSelectionChange)="onLocaleChange($any($event))"
+            aria-label="Select language"
+          >
+            @for (loc of locales; track loc.code) {
+              <z-select-item [zValue]="loc.code">{{ loc.label }}</z-select-item>
+            }
+          </z-select>
+          <button
+            z-button
+            zType="outline"
+            zSize="sm"
+            type="button"
+            [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
+            [attr.aria-pressed]="theme.isDark()"
+            (click)="theme.toggle()"
+          >
+            <i z-icon [zType]="theme.isDark() ? 'sun' : 'moon'"></i>
+          </button>
+        </div>
+      </header>
+    </div>
 
-    <!-- Header -->
-    <header class="flex items-start justify-between gap-4">
-      <div>
-        <h1 class="text-3xl font-bold tracking-tight">LoL Build Calculator</h1>
-        <p class="text-muted-foreground mt-1">Select a champion, set your level and items to see the final stats.</p>
-      </div>
-      <div class="flex items-center gap-2">
-        <z-select
-          zSize="sm"
-          zPlaceholder="Language"
-          [zValue]="ddragon.locale()"
-          (zSelectionChange)="onLocaleChange($any($event))"
-          aria-label="Select language"
-        >
-          @for (loc of locales; track loc.code) {
-            <z-select-item [zValue]="loc.code">{{ loc.label }}</z-select-item>
-          }
-        </z-select>
-        <button
-          z-button
-          zType="outline"
-          zSize="sm"
-          type="button"
-          [attr.aria-label]="theme.isDark() ? 'Switch to light theme' : 'Switch to dark theme'"
-          [attr.aria-pressed]="theme.isDark()"
-          (click)="theme.toggle()"
-        >
-          <i z-icon [zType]="theme.isDark() ? 'sun' : 'moon'"></i>
-        </button>
-      </div>
-    </header>
+    <!-- Saved builds -->
+    <section aria-label="Saved builds" class="space-y-3">
+      <h2 class="text-lg font-semibold">Builds</h2>
+      <app-saved-builds-panel />
+    </section>
 
-    <!-- Tabs -->
-    <z-segmented
-      [zOptions]="tabOptions()"
-      [zDefaultValue]="manager.activeTab()"
-      zAriaLabel="Page navigation"
-      (zChange)="manager.switchTab($any($event))"
-    />
-
-    </div><!-- end sticky -->
-
-    <!-- Builder tab -->
-    @if (manager.activeTab() === 'builder') {
-      <div class="space-y-6">
-
-        <!-- Champion selection -->
-        <section aria-label="Champion selection" class="flex flex-col gap-2 space-y-3">
-          <h2 class="text-lg font-semibold">Champion</h2>
-          <app-champion-search />
-          @if (build.selectedChampion()) {
-            <app-champion-card />
-          }
-        </section>
-
-        <!-- Level selector -->
-        @if (build.selectedChampion()) {
-          <section aria-label="Level selection">
-            <app-level-selector />
-          </section>
-        }
-
-        <!-- Items -->
-        @if (build.selectedChampion()) {
-          <section aria-label="Items" class="space-y-3">
-            <h2 class="text-lg font-semibold">Items</h2>
-            <app-item-grid />
-          </section>
-        }
-
-        <!-- Stats panel + Save -->
-        @if (build.finalStats()) {
-          <div class="flex flex-col gap-2 justify-end">
-          <app-stats-panel />
-            <button
-              z-button
-              type="button"
-              [attr.aria-label]="'Save current build'"
-              (click)="manager.saveBuild()"
-            >
-              <i z-icon zType="save"></i>
-              Save Build
-            </button>
-          </div>
-        }
-
-      </div>
-    }
-
-    <!-- Comparison tab -->
-    @if (manager.activeTab() === 'comparison') {
-      <div class="space-y-6">
-        <section aria-label="Saved builds" class="space-y-3">
-          <h2 class="text-lg font-semibold">Saved Builds</h2>
-          <app-saved-builds-panel />
-        </section>
-
-        <section aria-label="Stats comparison" class="space-y-3">
-          <h2 class="text-lg font-semibold">Stats Comparison</h2>
-          <app-builds-comparison />
-        </section>
-      </div>
-    }
+    <!-- Stats comparison -->
+    <section aria-label="Stats comparison" class="space-y-3">
+      <h2 class="text-lg font-semibold">Stats Comparison</h2>
+      <app-builds-comparison />
+    </section>
 
   </div>
 </main>
+
+@if (manager.builderModalOpen()) {
+  <app-builder-modal />
+}
 
 @if (build.activeSlotIndex() !== null) {
   <app-item-picker-modal

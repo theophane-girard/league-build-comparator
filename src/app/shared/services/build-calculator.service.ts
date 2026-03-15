@@ -3,6 +3,7 @@ import { computed, Injectable, signal } from '@angular/core';
 import type { ChampionDetail } from '@/features/build-calculator/models/champion.model';
 import type { Item } from '@/features/build-calculator/models/item.model';
 import type { FinalStats } from '@/features/build-calculator/models/computed-stats.model';
+import type { SavedBuild } from '@/features/build-calculator/models/build.model';
 import { calculateBaseStats, combineStats, sumItemStats } from '@/shared/utils/stats-calculator';
 
 @Injectable({ providedIn: 'root' })
@@ -66,6 +67,13 @@ export class BuildCalculatorService {
 
   applyItems(items: (Item | null)[]): void {
     this.selectedItems.set([...items]);
+    this.activeSlotIndex.set(null);
+  }
+
+  prefillFromBuild(build: SavedBuild): void {
+    this.selectedChampion.set(build.champion);
+    this.selectedLevel.set(build.level);
+    this.selectedItems.set([...build.items]);
     this.activeSlotIndex.set(null);
   }
 
