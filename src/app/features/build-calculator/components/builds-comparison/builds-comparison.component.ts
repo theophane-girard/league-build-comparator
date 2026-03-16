@@ -1,17 +1,12 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
-import { AgGridAngular } from 'ag-grid-angular';
-import {
-  colorSchemeDark,
-  colorSchemeLight,
-  type ColDef,
-  type CellClassParams,
-  themeQuartz,
-} from 'ag-grid-community';
+import { type CellClassParams, type CellStyle, type ColDef } from 'ag-grid-community';
 import type { ChartConfiguration } from 'chart.js';
 
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { ThemeService } from '@/shared/services/theme.service';
 import { ChartComponent } from '@/shared/components/chart/chart.component';
+import { TableComponent } from '@/shared/components/table/table.component';
+import { AG_GRID_THEME } from '@/shared/components/table/table-theme';
 import type { SavedBuild } from '../../models/build.model';
 
 type StatFormat = 'integer' | 'decimal' | 'percent';
@@ -50,13 +45,14 @@ function formatValue(value: number | undefined, format: StatFormat): string {
 
 @Component({
   selector: 'app-builds-comparison',
-  imports: [AgGridAngular, ChartComponent],
+  imports: [TableComponent, ChartComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './builds-comparison.component.html',
 })
 export class BuildsComparisonComponent {
   protected readonly manager = inject(BuildsManagerService);
   protected readonly theme = inject(ThemeService);
+  private readonly themeResolver = inject(AG_GRID_THEME, { optional: true });
 
   readonly selectedStatKeys = input<string[]>(STAT_DEFS.map(d => d.key));
 
@@ -64,12 +60,6 @@ export class BuildsComparisonComponent {
     const keys = this.selectedStatKeys();
     return keys.length ? STAT_DEFS.filter(d => keys.includes(d.key)) : STAT_DEFS;
   });
-
-  protected readonly gridTheme = computed(() =>
-    this.theme.isDark()
-      ? themeQuartz.withPart(colorSchemeDark)
-      : themeQuartz.withPart(colorSchemeLight),
-  );
 
   protected readonly rowData = computed((): ComparisonRow[] => {
     const builds = this.manager.savedBuilds();
@@ -83,6 +73,8 @@ export class BuildsComparisonComponent {
   });
 
   protected readonly columnDefs = computed((): ColDef[] => {
+    this.theme.isDark(); // track theme signal for cellStyle reactivity
+    const t = this.themeResolver?.();
     const builds = this.manager.savedBuilds();
 
     const statCol: ColDef = {
@@ -102,11 +94,12 @@ export class BuildsComparisonComponent {
       sortable: false,
       valueFormatter: (params: { value: number; data: ComparisonRow }) =>
         formatValue(params.value, params.data.format),
-      cellClassRules: {
-        'ag-best-value': (params: CellClassParams<ComparisonRow>) =>
-          this.isBest(params, builds),
-        'ag-worst-value': (params: CellClassParams<ComparisonRow>) =>
-          this.isWorst(params, builds),
+      cellStyle: (params: CellClassParams<ComparisonRow>): CellStyle | null => {
+        if (this.isBest(params, builds))
+          return { backgroundColor: t?.bestValueBg ?? '', color: t?.bestValueText ?? '', fontWeight: '600' };
+        if (this.isWorst(params, builds))
+          return { backgroundColor: t?.worstValueBg ?? '', color: t?.worstValueText ?? '' };
+        return null;
       },
     }));
 

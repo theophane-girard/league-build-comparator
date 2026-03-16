@@ -3,15 +3,13 @@
     <p class="text-sm">Save at least one build to compare.</p>
   </div>
 } @else {
-  <ag-grid-angular
-    class="w-full"
+  <app-table
     domLayout="autoHeight"
-    [theme]="gridTheme()"
     [rowData]="rowData()"
     [columnDefs]="columnDefs()"
     [defaultColDef]="defaultColDef"
     [suppressCellFocus]="false"
-    aria-label="Builds comparison table"
+    ariaLabel="Builds comparison table"
   />
 
   @if (chartConfig(); as cfg) {

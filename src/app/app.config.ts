@@ -6,6 +6,7 @@ import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { provideZard } from '@/shared/core/provider/providezard';
 import { provideChartTheme } from '@/shared/components/chart/chart-theme';
+import { provideAgGridTheme } from '@/shared/components/table/table-theme';
 import { AllCommunityModule, ModuleRegistry } from 'ag-grid-community';
 
 ModuleRegistry.registerModules([AllCommunityModule]);
@@ -18,5 +19,6 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withFetch()),
     provideZard(),
     provideChartTheme(),
+    provideAgGridTheme(),
   ]
 };
