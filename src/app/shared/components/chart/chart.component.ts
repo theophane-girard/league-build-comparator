@@ -152,6 +152,7 @@ export class ChartComponent<Type extends ChartType> implements AfterViewInit, On
             color: theme.tickColor,
             font: { size: 12 },
             padding: 8,
+            maxTicksLimit: 4,
           },
         },
       },
