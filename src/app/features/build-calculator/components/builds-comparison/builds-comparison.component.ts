@@ -102,9 +102,9 @@ export class BuildsComparisonComponent {
         formatValue(params.value, params.data.format),
       cellStyle: (params: CellClassParams<ComparisonRow>): CellStyle | null => {
         if (this.isBest(params, builds))
-          return { backgroundColor: t?.bestValueBg ?? '', color: t?.bestValueText ?? '', fontWeight: '600' };
+          return { color: t?.bestValueText ?? '', fontWeight: '600' };
         if (this.isWorst(params, builds))
-          return { backgroundColor: t?.worstValueBg ?? '', color: t?.worstValueText ?? '' };
+          return { color: t?.worstValueText ?? '' };
         return null;
       },
     }));

@@ -60,7 +60,7 @@ import type { SavedBuild } from '../../models/build.model';
           type="button"
           class="flex-1"
           [attr.aria-label]="'View ' + build().name"
-          (click)="manager.openNewBuild(build())"
+          (click)="manager.openEditBuild(build())"
         >
           <i z-icon zType="eye"></i>
         </button>
