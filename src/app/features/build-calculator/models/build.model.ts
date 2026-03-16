@@ -10,4 +10,5 @@ export interface SavedBuild {
   items: (Item | null)[];
   baseStats: BaseStats;
   finalStats: FinalStats;
+  totalGold: number;
 }

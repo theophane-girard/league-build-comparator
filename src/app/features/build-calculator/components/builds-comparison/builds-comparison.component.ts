@@ -18,26 +18,28 @@ interface ComparisonRow {
 }
 
 interface StatDef {
-  key: keyof SavedBuild['finalStats'];
+  key: string;
   label: string;
   format: StatFormat;
+  getValue: (build: SavedBuild) => number;
 }
 
 export const STAT_DEFS: StatDef[] = [
-  { key: 'hp', label: 'HP', format: 'integer' },
-  { key: 'mp', label: 'Mana', format: 'integer' },
-  { key: 'attackDamage', label: 'Attack Damage', format: 'integer' },
-  { key: 'abilityPower', label: 'Ability Power', format: 'integer' },
-  { key: 'armor', label: 'Armor', format: 'integer' },
-  { key: 'magicResist', label: 'Magic Resist', format: 'integer' },
-  { key: 'attackSpeed', label: 'Attack Speed', format: 'decimal' },
-  { key: 'critChance', label: 'Crit Chance', format: 'percent' },
-  { key: 'movementSpeed', label: 'Movement Speed', format: 'integer' },
-  { key: 'attackRange', label: 'Attack Range', format: 'integer' },
-  { key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent' },
-  { key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent' },
-  { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer' },
-  { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer' },
+  { key: 'hp', label: 'HP', format: 'integer', getValue: b => b.finalStats.hp },
+  { key: 'mp', label: 'Mana', format: 'integer', getValue: b => b.finalStats.mp },
+  { key: 'attackDamage', label: 'Attack Damage', format: 'integer', getValue: b => b.finalStats.attackDamage },
+  { key: 'abilityPower', label: 'Ability Power', format: 'integer', getValue: b => b.finalStats.abilityPower },
+  { key: 'armor', label: 'Armor', format: 'integer', getValue: b => b.finalStats.armor },
+  { key: 'magicResist', label: 'Magic Resist', format: 'integer', getValue: b => b.finalStats.magicResist },
+  { key: 'attackSpeed', label: 'Attack Speed', format: 'decimal', getValue: b => b.finalStats.attackSpeed },
+  { key: 'critChance', label: 'Crit Chance', format: 'percent', getValue: b => b.finalStats.critChance },
+  { key: 'movementSpeed', label: 'Movement Speed', format: 'integer', getValue: b => b.finalStats.movementSpeed },
+  { key: 'attackRange', label: 'Attack Range', format: 'integer', getValue: b => b.finalStats.attackRange },
+  { key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent', getValue: b => b.finalStats.physicalDamageReduction },
+  { key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent', getValue: b => b.finalStats.magicalDamageReduction },
+  { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer', getValue: b => b.finalStats.effectiveHpPhysical },
+  { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer', getValue: b => b.finalStats.effectiveHpMagical },
+  { key: 'totalGold', label: 'Total Gold', format: 'integer', getValue: b => b.totalGold },
 ];
 
 function formatValue(value: number | undefined, format: StatFormat): string {
@@ -70,7 +72,7 @@ export class BuildsComparisonComponent {
     return this.filteredStatDefs().map(def => {
       const row: ComparisonRow = { stat: def.label, format: def.format };
       for (const build of builds) {
-        row[build.id] = (build.finalStats[def.key] as number) ?? 0;
+        row[build.id] = def.getValue(build) ?? 0;
       }
       return row;
     });
@@ -118,9 +120,9 @@ export class BuildsComparisonComponent {
     const datasets = builds.map(build => ({
       label: build.name,
       data: statDefs.map(def => {
-        const statValues = builds.map(b => b.finalStats[def.key] as number);
+        const statValues = builds.map(b => def.getValue(b));
         const max = Math.max(...statValues);
-        return max === 0 ? 0 : Math.round(((build.finalStats[def.key] as number) / max) * 100);
+        return max === 0 ? 0 : Math.round((def.getValue(build) / max) * 100);
       }),
       borderRadius: 8,
     }));

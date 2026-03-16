@@ -31,14 +31,18 @@ export class BuildsManagerService {
     if (!champion || !finalStats || !baseStats) return;
 
     const n = this.savedBuilds().length + 1;
+    const items = [...this.buildCalc.selectedItems()];
+    const totalGold = items.reduce((sum, item) => sum + (item?.gold.total ?? 0), 0);
+
     const build: SavedBuild = {
       id: `build-${Date.now()}`,
       name: `Build ${n}`,
       champion,
       level: this.buildCalc.selectedLevel(),
-      items: [...this.buildCalc.selectedItems()],
+      items,
       baseStats,
       finalStats,
+      totalGold,
     };
     this.savedBuilds.update(list => [...list, build]);
   }
