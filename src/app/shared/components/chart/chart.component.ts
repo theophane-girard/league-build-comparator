@@ -76,7 +76,14 @@ export class ChartComponent<Type extends ChartType> implements AfterViewInit, On
     const datasets = (config.data?.datasets ?? []).map((ds, i) => {
       const color = theme.datasetColors[i % theme.datasetColors.length];
       return {
-        backgroundColor: `color-mix(in oklch, ${color} 75%, transparent)`,
+        backgroundColor: (context: { chart: { ctx: CanvasRenderingContext2D; chartArea?: { top: number; bottom: number } } }) => {
+          const { ctx, chartArea } = context.chart;
+          if (!chartArea) return `color-mix(in oklch, ${color} 75%, transparent)`;
+          const gradient = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          gradient.addColorStop(0, `color-mix(in oklch, ${color} 95%, transparent)`);
+          gradient.addColorStop(1, `color-mix(in oklch, ${color} 45%, transparent)`);
+          return gradient;
+        },
         borderColor: color,
         borderWidth: 2,
         ...ds,
