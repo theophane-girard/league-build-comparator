@@ -29,6 +29,20 @@ import { CHART_THEME, type ChartTheme } from './chart-theme';
 
 Chart.register(BarController, BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
+// Adds vertical gap between the legend and the chart area
+Chart.register({
+  id: 'legendGap',
+  beforeInit(chart) {
+    const legend = chart.legend as { fit?: () => void } | undefined;
+    if (!legend) return;
+    const originalFit = legend.fit?.bind(legend);
+    legend.fit = function () {
+      originalFit?.();
+      (this as unknown as { height: number }).height += 16;
+    };
+  },
+});
+
 @Component({
   selector: 'apps-chart',
   template: `
@@ -98,7 +112,7 @@ export class ChartComponent<Type extends ChartType> implements AfterViewInit, On
       plugins: {
         legend: {
           position: 'top',
-          align: 'start',
+          align: 'center',
           labels: {
             color: theme.legendColor,
             usePointStyle: true,
