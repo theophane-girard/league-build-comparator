@@ -117,12 +117,13 @@ export class BuildsComparisonComponent {
     if (builds.length < 2) return null;
     const statDefs = this.filteredStatDefs();
 
-    const datasets = builds.map(build => ({
+    const realValues = builds.map(build => statDefs.map(def => def.getValue(build)));
+
+    const datasets = builds.map((build, bi) => ({
       label: build.name,
-      data: statDefs.map(def => {
-        const statValues = builds.map(b => def.getValue(b));
-        const max = Math.max(...statValues);
-        return max === 0 ? 0 : Math.round((def.getValue(build) / max) * 100);
+      data: statDefs.map((def, si) => {
+        const max = Math.max(...builds.map(b => def.getValue(b)));
+        return max === 0 ? 0 : Math.round((realValues[bi][si] / max) * 100);
       }),
       borderRadius: 8,
     }));
@@ -139,7 +140,11 @@ export class BuildsComparisonComponent {
         plugins: {
           tooltip: {
             callbacks: {
-              label: ctx => `${ctx.dataset.label}: ${ctx.parsed.y}%`,
+              label: ctx => {
+                const real = realValues[ctx.datasetIndex][ctx.dataIndex];
+                const format = statDefs[ctx.dataIndex].format;
+                return `${ctx.dataset.label}: ${formatValue(real, format)}`;
+              },
             },
           },
         },
@@ -148,7 +153,7 @@ export class BuildsComparisonComponent {
             beginAtZero: true,
             max: 100,
             ticks: {
-              callback: value => `${value}%`,
+              callback: value => value === 100 ? 'Max' : value === 0 ? '0' : '',
             },
           },
         },

@@ -27,7 +27,7 @@ export const segmentedItemVariants = cva(
       },
       isActive: {
         true: 'bg-background text-foreground shadow-sm',
-        false: 'hover:bg-muted/50',
+        false: 'hover:bg-muted/50 cursor-pointer',
       },
     },
     defaultVariants: {

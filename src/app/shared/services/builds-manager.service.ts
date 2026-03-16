@@ -41,21 +41,22 @@ export class BuildsManagerService {
     const items = [...this.buildCalc.selectedItems()];
     const totalGold = items.reduce((sum, item) => sum + (item?.gold.total ?? 0), 0);
     const editingId = this.editingBuildId();
+    const itemNames = items.filter(i => i !== null).map(i => i!.name);
+    const name = itemNames.length > 0 ? itemNames.join(' - ') : `Build ${this.savedBuilds().length + 1}`;
 
     if (editingId) {
       this.savedBuilds.update(list =>
         list.map(b =>
           b.id === editingId
-            ? { ...b, champion, level: this.buildCalc.selectedLevel(), items, baseStats, finalStats, totalGold }
+            ? { ...b, name, champion, level: this.buildCalc.selectedLevel(), items, baseStats, finalStats, totalGold }
             : b,
         ),
       );
       this.editingBuildId.set(null);
     } else {
-      const n = this.savedBuilds().length + 1;
       const build: SavedBuild = {
         id: `build-${Date.now()}`,
-        name: `Build ${n}`,
+        name,
         champion,
         level: this.buildCalc.selectedLevel(),
         items,
