@@ -47,16 +47,24 @@ export function sumItemStats(items: Item[]): ItemBonuses {
 }
 
 export function combineStats(base: BaseStats, bonuses: ItemBonuses): FinalStats {
+  const hp = base.hp + bonuses.hp;
+  const armor = base.armor + bonuses.armor;
+  const magicResist = base.magicResist + bonuses.magicResist;
+
   return {
-    hp: base.hp + bonuses.hp,
+    hp,
     mp: base.mp + bonuses.mp,
-    armor: base.armor + bonuses.armor,
-    magicResist: base.magicResist + bonuses.magicResist,
+    armor,
+    magicResist,
     attackDamage: base.attackDamage + bonuses.attackDamage,
     abilityPower: bonuses.abilityPower,
     attackSpeed: base.attackSpeed * (1 + bonuses.attackSpeedBonus),
     attackRange: base.attackRange,
     movementSpeed: base.movementSpeed + bonuses.movementSpeed,
     critChance: Math.min(100, base.critChance + bonuses.critChance),
+    physicalDamageReduction: (armor / (100 + armor)) * 100,
+    magicalDamageReduction: (magicResist / (100 + magicResist)) * 100,
+    effectiveHpPhysical: hp * (100 + armor) / 100,
+    effectiveHpMagical: hp * (100 + magicResist) / 100,
   };
 }

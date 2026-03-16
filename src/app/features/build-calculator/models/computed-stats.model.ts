@@ -24,4 +24,12 @@ export interface ItemBonuses {
 
 export interface FinalStats extends BaseStats {
   abilityPower: number;
+  /** Percentage of physical damage mitigated: armor / (100 + armor) × 100 */
+  physicalDamageReduction: number;
+  /** Percentage of magic damage mitigated: magicResist / (100 + magicResist) × 100 */
+  magicalDamageReduction: number;
+  /** Effective HP against physical damage: hp × (100 + armor) / 100 */
+  effectiveHpPhysical: number;
+  /** Effective HP against magic damage: hp × (100 + magicResist) / 100 */
+  effectiveHpMagical: number;
 }

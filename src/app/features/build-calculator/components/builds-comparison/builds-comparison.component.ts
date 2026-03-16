@@ -34,6 +34,10 @@ export const STAT_DEFS: StatDef[] = [
   { key: 'critChance', label: 'Crit Chance', format: 'percent' },
   { key: 'movementSpeed', label: 'Movement Speed', format: 'integer' },
   { key: 'attackRange', label: 'Attack Range', format: 'integer' },
+  { key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent' },
+  { key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent' },
+  { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer' },
+  { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer' },
 ];
 
 function formatValue(value: number | undefined, format: StatFormat): string {
