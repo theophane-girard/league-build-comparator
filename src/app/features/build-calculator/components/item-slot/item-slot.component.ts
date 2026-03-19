@@ -12,7 +12,7 @@ import type { Item } from '../../models/item.model';
     <div class="relative group">
       <button
         type="button"
-        class="w-14 h-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center
+        class="cursor-pointer w-14 h-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center
                bg-muted/30 hover:bg-muted/60 transition-colors focus-visible:outline-none
                focus-visible:ring-2 focus-visible:ring-ring overflow-hidden"
         [class]="item() ? 'border-solid border-border' : ''"

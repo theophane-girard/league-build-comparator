@@ -28,7 +28,7 @@
         @for (map of mapTypes; track map.id) {
           <button
             type="button"
-            class="px-3 py-1.5 text-xs font-medium rounded-md border transition-colors
+            class="cursor-pointer px-3 py-1.5 text-xs font-medium rounded-md border transition-colors
                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             [class]="selectedMapId() === map.id
               ? 'bg-primary text-primary-foreground border-primary'
@@ -57,10 +57,9 @@
 
       <!-- Close -->
       <button
+        z-button
         type="button"
-        class="flex items-center justify-center w-9 h-9 rounded-md border border-border
-               text-muted-foreground hover:text-foreground hover:bg-muted transition-colors
-               focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        zType="secondary"
         aria-label="Close item picker"
         (click)="close()"
       >
@@ -97,7 +96,7 @@
         <div class="p-2 border-r border-border flex flex-col gap-0.5 shrink-0" role="group" aria-label="Item categories">
           <button
             type="button"
-            class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors
+            class="cursor-pointer flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors
                    focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             [class]="activeFilters().size === 0
               ? 'bg-primary text-primary-foreground'
@@ -112,7 +111,7 @@
           @for (cat of categories; track cat.id) {
             <button
               type="button"
-              class="flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors
+              class="cursor-pointer flex items-center gap-2.5 px-3 py-2 rounded-md text-sm transition-colors
                      focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               [class]="activeFilters().has(cat.id)
                 ? 'bg-primary text-primary-foreground'
@@ -136,7 +135,7 @@
               @for (item of filteredItems(); track item.id) {
                 <button
                   type="button"
-                  class="w-full aspect-square rounded border transition-colors overflow-hidden
+                  class="cursor-pointer w-full aspect-square rounded border transition-colors overflow-hidden
                        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   [class]="previewedItem()?.id === item.id
                   ? 'border-primary ring-1 ring-primary'
@@ -178,7 +177,7 @@
                 @for (parent of parentSuggestions(); track parent.id) {
                   <button
                     type="button"
-                    class="w-14 h-14 rounded border border-border hover:border-primary/70 transition-colors
+                    class="cursor-pointer w-14 h-14 rounded border border-border hover:border-primary/70 transition-colors
                            overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     [attr.aria-label]="'Preview ' + parent.name"
                     [title]="parent.name"
@@ -224,7 +223,7 @@
                     <div class="w-px h-6 bg-border/60 mb-1"></div>
                     <button
                       type="button"
-                      class="w-14 h-14 rounded border border-border hover:border-primary/70 transition-colors
+                      class="cursor-pointer w-14 h-14 rounded border border-border hover:border-primary/70 transition-colors
                              overflow-hidden focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       [attr.aria-label]="'Preview component: ' + comp.name"
                       [title]="comp.name"
