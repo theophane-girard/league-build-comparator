@@ -15,7 +15,33 @@ interface StatRow {
   selector: 'app-stats-panel',
   imports: [ZardIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './stats-panel.component.html',
+  template: `
+    <section aria-label="Champion stats" class="rounded-lg border bg-card p-4">
+      <h2 class="font-semibold mb-4">Stats</h2>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="list">
+        @for (row of statRows(); track row.label) {
+          <div class="flex items-center gap-3 py-2 px-3 rounded-md bg-muted/30" role="listitem">
+            <i z-icon [zType]="row.icon" class="shrink-0 text-muted-foreground" aria-hidden="true"></i>
+            <span class="flex-1 text-sm text-muted-foreground">{{ row.label }}</span>
+            <div class="flex items-baseline gap-2">
+              <span class="font-mono font-semibold text-sm" [attr.aria-label]="row.label + ': ' + formatValue(row.finalValue, row.format)">
+                {{ formatValue(row.finalValue, row.format) }}
+              </span>
+              @if (getDelta(row) !== 0) {
+                <span
+                  class="font-mono text-xs"
+                  [class]="getDelta(row) > 0 ? 'text-green-500' : 'text-red-500'"
+                  [attr.aria-label]="'Bonus: ' + (getDelta(row) > 0 ? '+' : '') + formatValue(getDelta(row), row.format)"
+                >
+                  {{ getDelta(row) > 0 ? '+' : '' }}{{ formatValue(getDelta(row), row.format) }}
+                </span>
+              }
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  `,
 })
 export class StatsPanelComponent {
   protected readonly build = inject(BuildCalculatorService);
