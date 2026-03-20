@@ -1,6 +1,8 @@
-import { computed, inject, Injectable, signal } from '@angular/core';
+import { computed, effect, inject, Injectable, signal } from '@angular/core';
 
+import type { Item } from '@/features/build-calculator/models/item.model';
 import type { SavedBuild } from '@/features/build-calculator/models/build.model';
+import { calculateBaseStats, combineStats, sumItemStats } from '@/shared/utils/stats-calculator';
 import { BuildCalculatorService } from './build-calculator.service';
 
 @Injectable({ providedIn: 'root' })
@@ -10,9 +12,23 @@ export class BuildsManagerService {
   readonly savedBuilds = signal<SavedBuild[]>([]);
   readonly editingBuildId = signal<string | null>(null);
 
-  readonly canSave = computed(
-    () => this.buildCalc.selectedChampion() !== null && this.buildCalc.finalStats() !== null,
-  );
+  constructor() {
+    effect(() => {
+      const champion = this.buildCalc.selectedChampion();
+      if (!champion) return;
+      this.savedBuilds.update(builds =>
+        builds.map(build => {
+          if (build.champion) return build;
+          const baseStats = calculateBaseStats(champion.stats, build.level);
+          const itemBonuses = sumItemStats(build.items.filter((i): i is Item => i !== null));
+          const finalStats = combineStats(baseStats, itemBonuses);
+          return { ...build, champion, baseStats, finalStats };
+        }),
+      );
+    });
+  }
+
+  readonly canSave = computed(() => true);
 
   readonly buildCount = computed(() => this.savedBuilds().length);
 
@@ -33,10 +49,9 @@ export class BuildsManagerService {
   }
 
   saveBuild(): void {
-    const champion = this.buildCalc.selectedChampion();
-    const finalStats = this.buildCalc.finalStats();
-    const baseStats = this.buildCalc.baseStats();
-    if (!champion || !finalStats || !baseStats) return;
+    const champion = this.buildCalc.selectedChampion() ?? undefined;
+    const finalStats = this.buildCalc.finalStats() ?? undefined;
+    const baseStats = this.buildCalc.baseStats() ?? undefined;
 
     const items = [...this.buildCalc.selectedItems()];
     const totalGold = items.reduce((sum, item) => sum + (item?.gold.total ?? 0), 0);

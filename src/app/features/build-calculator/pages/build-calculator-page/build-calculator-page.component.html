@@ -78,7 +78,7 @@
   <app-item-picker-modal
     [slotIndex]="build.activeSlotIndex()!"
     [initialItems]="build.selectedItems()"
-    [canSaveBuild]="!!build.selectedChampion()"
+    [canSaveBuild]="true"
     (closed)="onModalClose($event)"
     (buildSaved)="onBuildSaved($event)"
   />

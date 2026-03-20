@@ -5,10 +5,10 @@ import type { BaseStats, FinalStats } from './computed-stats.model';
 export interface SavedBuild {
   id: string;
   name: string;
-  champion: ChampionDetail;
+  champion?: ChampionDetail;
   level: number;
   items: (Item | null)[];
-  baseStats: BaseStats;
-  finalStats: FinalStats;
+  baseStats?: BaseStats;
+  finalStats?: FinalStats;
   totalGold: number;
 }

@@ -71,7 +71,7 @@ export class BuildCalculatorService {
   }
 
   prefillFromBuild(build: SavedBuild): void {
-    this.selectedChampion.set(build.champion);
+    this.selectedChampion.set(build.champion ?? null);
     this.selectedLevel.set(build.level);
     this.selectedItems.set([...build.items]);
     this.activeSlotIndex.set(null);

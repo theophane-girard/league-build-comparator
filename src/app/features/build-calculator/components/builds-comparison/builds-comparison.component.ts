@@ -25,20 +25,20 @@ interface StatDef {
 }
 
 export const STAT_DEFS: StatDef[] = [
-  { key: 'hp', label: 'HP', format: 'integer', getValue: b => b.finalStats.hp },
-  { key: 'mp', label: 'Mana', format: 'integer', getValue: b => b.finalStats.mp },
-  { key: 'attackDamage', label: 'Attack Damage', format: 'integer', getValue: b => b.finalStats.attackDamage },
-  { key: 'abilityPower', label: 'Ability Power', format: 'integer', getValue: b => b.finalStats.abilityPower },
-  { key: 'armor', label: 'Armor', format: 'integer', getValue: b => b.finalStats.armor },
-  { key: 'magicResist', label: 'Magic Resist', format: 'integer', getValue: b => b.finalStats.magicResist },
-  { key: 'attackSpeed', label: 'Attack Speed', format: 'decimal', getValue: b => b.finalStats.attackSpeed },
-  { key: 'critChance', label: 'Crit Chance', format: 'percent', getValue: b => b.finalStats.critChance },
-  { key: 'movementSpeed', label: 'Movement Speed', format: 'integer', getValue: b => b.finalStats.movementSpeed },
-  { key: 'attackRange', label: 'Attack Range', format: 'integer', getValue: b => b.finalStats.attackRange },
-  { key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent', getValue: b => b.finalStats.physicalDamageReduction },
-  { key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent', getValue: b => b.finalStats.magicalDamageReduction },
-  { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer', getValue: b => b.finalStats.effectiveHpPhysical },
-  { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer', getValue: b => b.finalStats.effectiveHpMagical },
+  { key: 'hp', label: 'HP', format: 'integer', getValue: b => b.finalStats?.hp ?? 0 },
+  { key: 'mp', label: 'Mana', format: 'integer', getValue: b => b.finalStats?.mp ?? 0 },
+  { key: 'attackDamage', label: 'Attack Damage', format: 'integer', getValue: b => b.finalStats?.attackDamage ?? 0 },
+  { key: 'abilityPower', label: 'Ability Power', format: 'integer', getValue: b => b.finalStats?.abilityPower ?? 0 },
+  { key: 'armor', label: 'Armor', format: 'integer', getValue: b => b.finalStats?.armor ?? 0 },
+  { key: 'magicResist', label: 'Magic Resist', format: 'integer', getValue: b => b.finalStats?.magicResist ?? 0 },
+  { key: 'attackSpeed', label: 'Attack Speed', format: 'decimal', getValue: b => b.finalStats?.attackSpeed ?? 0 },
+  { key: 'critChance', label: 'Crit Chance', format: 'percent', getValue: b => b.finalStats?.critChance ?? 0 },
+  { key: 'movementSpeed', label: 'Movement Speed', format: 'integer', getValue: b => b.finalStats?.movementSpeed ?? 0 },
+  { key: 'attackRange', label: 'Attack Range', format: 'integer', getValue: b => b.finalStats?.attackRange ?? 0 },
+  { key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent', getValue: b => b.finalStats?.physicalDamageReduction ?? 0 },
+  { key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent', getValue: b => b.finalStats?.magicalDamageReduction ?? 0 },
+  { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer', getValue: b => b.finalStats?.effectiveHpPhysical ?? 0 },
+  { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer', getValue: b => b.finalStats?.effectiveHpMagical ?? 0 },
   { key: 'totalGold', label: 'Total Gold', format: 'integer', getValue: b => b.totalGold },
 ];
 
@@ -95,7 +95,7 @@ export class BuildsComparisonComponent {
     const buildCols: ColDef[] = builds.map(build => ({
       field: build.id,
       headerName: build.name,
-      headerTooltip: `${build.champion.name} · Lvl ${build.level}`,
+      headerTooltip: build.champion ? `${build.champion.name} · Lvl ${build.level}` : `Lvl ${build.level}`,
       minWidth: 160,
       sortable: false,
       valueFormatter: (params: { value: number; data: ComparisonRow }) =>

@@ -18,16 +18,24 @@ import type { SavedBuild } from '../../models/build.model';
     >
       <!-- Champion info -->
       <div class="flex items-center gap-2">
-        <img
-          [src]="ddragon.getChampionImageUrl(build().champion.image.full)"
-          [alt]="build().champion.name"
-          width="36"
-          height="36"
-          class="w-9 h-9 rounded object-cover shrink-0"
-        />
+        @if (build().champion) {
+          <img
+            [src]="ddragon.getChampionImageUrl(build().champion!.image.full)"
+            [alt]="build().champion!.name"
+            width="36"
+            height="36"
+            class="w-9 h-9 rounded object-cover shrink-0"
+          />
+        } @else {
+          <div class="w-9 h-9 rounded bg-muted/60 shrink-0 flex items-center justify-center" aria-hidden="true">
+            <i z-icon zType="user"></i>
+          </div>
+        }
         <div class="min-w-0">
           <p class="font-semibold text-sm truncate">{{ build().name }}</p>
-          <p class="text-xs text-muted-foreground truncate">{{ build().champion.name }} · Lvl {{ build().level }}</p>
+          <p class="text-xs text-muted-foreground truncate">
+            {{ build().champion ? build().champion!.name + ' · Lvl ' + build().level : 'No champion' }}
+          </p>
         </div>
       </div>
 
