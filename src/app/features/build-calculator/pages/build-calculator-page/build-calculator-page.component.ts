@@ -26,7 +26,6 @@ import type { Item } from '../../models/item.model';
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="min-h-screen bg-background p-6" aria-label="LoL Build Calculator">
       <div class="max-w-5xl mx-auto space-y-6">
 
         <section aria-label="Champion and level selection" class="flex flex-col gap-2 space-y-3">
@@ -63,7 +62,6 @@ import type { Item } from '../../models/item.model';
         </section>
 
       </div>
-    </main>
 
     @if (build.activeSlotIndex() !== null) {
       <app-item-picker-modal

@@ -9,7 +9,13 @@ import { ThemeService } from '@/shared/services/theme.service';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, ZardButtonComponent, ZardIconComponent, ZardSelectComponent, ZardSelectItemComponent],
+  imports: [
+    RouterOutlet,
+    ZardButtonComponent,
+    ZardIconComponent,
+    ZardSelectComponent,
+    ZardSelectItemComponent,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="sticky top-0 z-10 bg-background border-b border-border">
@@ -44,7 +50,9 @@ import { ThemeService } from '@/shared/services/theme.service';
         </div>
       </header>
     </div>
-    <router-outlet />
+    <main class="min-h-screen bg-background p-6" aria-label="LoL Build Calculator">
+      <router-outlet />
+    </main>
   `,
 })
 export class App {
