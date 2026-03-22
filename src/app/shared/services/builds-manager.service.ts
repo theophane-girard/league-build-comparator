@@ -14,15 +14,16 @@ export class BuildsManagerService {
 
   constructor() {
     effect(() => {
-      const champion = this.buildCalc.selectedChampion();
-      if (!champion) return;
+      const selectedChampion = this.buildCalc.selectedChampion();
+      const level = this.buildCalc.selectedLevel();
       this.savedBuilds.update(builds =>
         builds.map(build => {
-          if (build.champion) return build;
-          const baseStats = calculateBaseStats(champion.stats, build.level);
+          const champion = build.champion ?? selectedChampion;
+          if (!champion) return build;
+          const baseStats = calculateBaseStats(champion.stats, level);
           const itemBonuses = sumItemStats(build.items.filter((i): i is Item => i !== null));
           const finalStats = combineStats(baseStats, itemBonuses);
-          return { ...build, champion, baseStats, finalStats };
+          return { ...build, champion, level, baseStats, finalStats };
         }),
       );
     });
