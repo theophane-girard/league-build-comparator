@@ -9,7 +9,7 @@ export class ThemeService {
 
   readonly isDark = signal(false);
 
-  constructor() {
+  init(): void {
     if (isPlatformBrowser(this.platformId)) {
       const stored = localStorage.getItem('theme');
       const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
