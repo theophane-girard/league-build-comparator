@@ -14,14 +14,12 @@ import { isPlatformBrowser } from '@angular/common';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 import { CdkTrapFocus } from '@angular/cdk/a11y';
 
-import { ZardButtonComponent } from '@/shared/components/button';
-import { ZardIconComponent } from '@/shared/components/icon';
 import type { ZardIcon } from '@/shared/components/icon';
-import { ZardInputDirective } from '@/shared/components/input';
 import { DdragonService } from '@/shared/services/ddragon.service';
-import { ItemSlotComponent } from '../item-slot/item-slot.component';
 import type { Item } from '../../models/item.model';
-import { ZardInputGroupComponent } from '@/shared/components/input-group';
+import { ItemPickerHeaderComponent } from './item-picker-header.component';
+import { ItemPickerSidebarComponent } from './item-picker-sidebar.component';
+import { ItemDetailPanelComponent } from './item-detail-panel.component';
 
 interface ItemCategory {
   id: string;
@@ -71,22 +69,59 @@ const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
 
 @Component({
   selector: 'app-item-picker-modal',
-  imports: [
-    ZardButtonComponent,
-    ZardIconComponent,
-    ZardInputDirective,
-    ItemSlotComponent,
-    CdkTrapFocus,
-    ZardInputGroupComponent,
-  ],
+  imports: [CdkTrapFocus, ItemPickerHeaderComponent, ItemPickerSidebarComponent, ItemDetailPanelComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  templateUrl: './item-picker-modal.component.html',
+  template: `
+    <div
+      cdkTrapFocus
+      cdkTrapFocusAutoCapture
+      class="fixed inset-0 z-50 flex flex-col bg-background"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Item picker"
+    >
+      <app-item-picker-header
+        [localItems]="localItems()"
+        [activeSlotIndex]="activeSlotIndex()"
+        [mapTypes]="mapTypes"
+        [selectedMapId]="selectedMapId()"
+        [canSaveBuild]="canSaveBuild()"
+        (slotClick)="setActiveSlot($event)"
+        (clearClick)="clearSlot($event)"
+        (mapFilterChange)="setMapFilter($event)"
+        (saveBuild)="saveBuildClick()"
+        (close)="close()"
+      />
+
+      <div class="flex flex-1 min-h-0">
+        <app-item-picker-sidebar
+          [filteredItems]="filteredItems()"
+          [previewedItemId]="previewedItem()?.id"
+          [searchText]="searchText()"
+          [categories]="categories"
+          [activeFilters]="activeFilters()"
+          (searchChange)="searchText.set($event)"
+          (filterToggle)="toggleFilter($event)"
+          (filterClear)="clearFilters()"
+          (itemSelect)="selectItemFromList($event)"
+        />
+
+        <app-item-detail-panel
+          [item]="previewedItem()"
+          [parentSuggestions]="parentSuggestions()"
+          [previewedComponents]="previewedComponents()"
+          [previewedDescription]="previewedDescription()"
+          (itemSelect)="selectItemFromList($event)"
+        />
+      </div>
+    </div>
+  `,
   host: {
     '(document:keydown.escape)': 'close()',
   },
 })
 export class ItemPickerModalComponent implements OnInit, OnDestroy {
-  protected readonly ddragon = inject(DdragonService);
+  private readonly ddragon = inject(DdragonService);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly sanitizer = inject(DomSanitizer);
 
@@ -211,8 +246,26 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     this.previewedItem.set(null);
   }
 
-  protected onSearchInput(event: Event): void {
-    this.searchText.set((event.target as HTMLInputElement).value);
+  protected selectItemFromList(item: Item): void {
+    this.previewedItem.set(item);
+    this.placeInActiveSlot(item);
+  }
+
+  private placeInActiveSlot(item: Item): void {
+    const index = this.activeSlotIndex();
+    this.localItems.update((items) => {
+      const next = [...items];
+      next[index] = item;
+      return next;
+    });
+  }
+
+  protected saveBuildClick(): void {
+    this.buildSaved.emit(this.localItems());
+  }
+
+  protected close(): void {
+    this.closed.emit(this.localItems());
   }
 
   private formatItemDescription(raw: string): string {
@@ -257,32 +310,5 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
       .replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g, (match, tag) =>
         STANDARD_TAGS.test(tag) ? match : ''
       );
-  }
-
-  protected selectItemFromList(item: Item): void {
-    this.previewedItem.set(item);
-    this.placeInActiveSlot(item);
-  }
-
-  protected previewComponent(comp: Item): void {
-    this.previewedItem.set(comp);
-    this.placeInActiveSlot(comp);
-  }
-
-  private placeInActiveSlot(item: Item): void {
-    const index = this.activeSlotIndex();
-    this.localItems.update((items) => {
-      const next = [...items];
-      next[index] = item;
-      return next;
-    });
-  }
-
-  protected saveBuildClick(): void {
-    this.buildSaved.emit(this.localItems());
-  }
-
-  protected close(): void {
-    this.closed.emit(this.localItems());
   }
 }
