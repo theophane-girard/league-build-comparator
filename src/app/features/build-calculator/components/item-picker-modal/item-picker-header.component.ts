@@ -14,6 +14,7 @@ interface MapType {
   selector: 'app-item-picker-header',
   imports: [ZardButtonComponent, ZardIconComponent, ItemSlotComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'contents' },
   template: `
     <header class="flex items-center justify-between gap-6 px-6 py-4 border-b border-border shrink-0">
       <div class="flex items-center gap-3" role="group" aria-label="Item slots">

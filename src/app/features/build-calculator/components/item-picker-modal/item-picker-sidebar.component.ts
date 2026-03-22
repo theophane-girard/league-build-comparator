@@ -17,6 +17,7 @@ interface ItemCategory {
   selector: 'app-item-picker-sidebar',
   imports: [ZardIconComponent, ZardInputDirective, ZardInputGroupComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'contents' },
   template: `
     <aside class="w-120 flex flex-col border-r border-border shrink-0" aria-label="Item filters and list">
 

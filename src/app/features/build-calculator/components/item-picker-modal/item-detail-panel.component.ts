@@ -9,6 +9,7 @@ import type { Item } from '../../models/item.model';
   selector: 'app-item-detail-panel',
   imports: [ZardIconComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
+  host: { class: 'contents' },
   template: `
     <main class="flex-1 flex flex-col items-center overflow-y-auto p-8" aria-label="Item details">
 

@@ -1,27 +1,15 @@
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import { ZardButtonComponent } from '@/shared/components/button';
 import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardPopoverDirective, ZardPopoverComponent } from '@/shared/components/popover';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { DdragonService } from '@/shared/services/ddragon.service';
-import type { Item, ItemStats } from '../../models/item.model';
+import { formatItemDescription } from '@/shared/utils/format-item-description';
+import type { Item } from '../../models/item.model';
 import type { SavedBuild } from '../../models/build.model';
 
-const STAT_LABELS: Record<keyof ItemStats, { name: string; percent?: boolean }> = {
-  FlatHPPoolMod: { name: 'Health' },
-  FlatMPPoolMod: { name: 'Mana' },
-  FlatArmorMod: { name: 'Armor' },
-  FlatSpellBlockMod: { name: 'Magic Resist' },
-  FlatPhysicalDamageMod: { name: 'Attack Damage' },
-  FlatMagicDamageMod: { name: 'Ability Power' },
-  FlatMovementSpeedMod: { name: 'Movement Speed' },
-  FlatCritChanceMod: { name: 'Crit Chance', percent: true },
-  PercentAttackSpeedMod: { name: 'Attack Speed', percent: true },
-  FlatHPRegenMod: { name: 'Health Regen' },
-  PercentLifeStealMod: { name: 'Life Steal', percent: true },
-  PercentMovementSpeedMod: { name: 'Move Speed', percent: true },
-};
 
 @Component({
   selector: 'app-saved-build-item',
@@ -75,12 +63,11 @@ const STAT_LABELS: Record<keyof ItemStats, { name: string; percent?: boolean }> 
                     <p class="text-xs text-yellow-500">{{ item.gold.total }} gold</p>
                   </div>
                 </div>
-                @if (getItemStats(item).length > 0) {
-                  <div class="flex flex-col gap-0.5 border-t border-border pt-2">
-                    @for (stat of getItemStats(item); track stat) {
-                      <p class="text-xs text-muted-foreground">{{ stat }}</p>
-                    }
-                  </div>
+                @if (item.description) {
+                  <div
+                    class="text-xs leading-relaxed text-muted-foreground border-t border-border pt-2 mt-1"
+                    [innerHTML]="getItemDescription(item)"
+                  ></div>
                 }
               </z-popover>
             </ng-template>
@@ -149,18 +136,12 @@ const STAT_LABELS: Record<keyof ItemStats, { name: string; percent?: boolean }> 
 export class SavedBuildItemComponent {
   protected readonly manager = inject(BuildsManagerService);
   protected readonly ddragon = inject(DdragonService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly build = input.required<SavedBuild>();
 
-  protected getItemStats(item: Item): string[] {
-    return (Object.entries(item.stats) as [keyof ItemStats, number | undefined][])
-      .filter(([, value]) => value !== undefined && value > 0)
-      .map(([key, value]) => {
-        const meta = STAT_LABELS[key];
-        if (!meta) return null;
-        const formatted = meta.percent ? `${Math.round((value ?? 0) * 100)}%` : `${value}`;
-        return `+${formatted} ${meta.name}`;
-      })
-      .filter((s): s is string => s !== null);
+  protected getItemDescription(item: Item): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(formatItemDescription(item.description));
   }
+
 }
