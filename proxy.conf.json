@@ -1,0 +1,11 @@
+{
+  "/meraki-api": {
+    "target": "https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/meraki-api": ""
+    },
+    "logLevel": "info"
+  }
+}

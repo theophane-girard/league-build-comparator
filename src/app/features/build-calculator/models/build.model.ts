@@ -1,6 +1,7 @@
 import type { ChampionDetail } from './champion.model';
 import type { Item } from './item.model';
 import type { BaseStats, FinalStats } from './computed-stats.model';
+import type { DamageStats } from '@/shared/utils/damage-calculator';
 
 export interface SavedBuild {
   id: string;
@@ -11,4 +12,5 @@ export interface SavedBuild {
   baseStats?: BaseStats;
   finalStats?: FinalStats;
   totalGold: number;
+  damageStats?: DamageStats;
 }

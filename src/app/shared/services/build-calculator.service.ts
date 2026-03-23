@@ -3,8 +3,11 @@ import { computed, Injectable, signal } from '@angular/core';
 import type { ChampionDetail } from '@/features/build-calculator/models/champion.model';
 import type { Item } from '@/features/build-calculator/models/item.model';
 import type { FinalStats } from '@/features/build-calculator/models/computed-stats.model';
+import type { DamageStats } from '@/shared/utils/damage-calculator';
 import type { SavedBuild } from '@/features/build-calculator/models/build.model';
 import { calculateBaseStats, combineStats, sumItemStats } from '@/shared/utils/stats-calculator';
+import { calculateDamageStats } from '@/shared/utils/damage-calculator';
+import { getSpellRanks } from '@/shared/utils/spell-rank';
 
 @Injectable({ providedIn: 'root' })
 export class BuildCalculatorService {
@@ -30,6 +33,15 @@ export class BuildCalculatorService {
     if (!base) return null;
     const bonuses = this.itemBonuses();
     return combineStats(base, bonuses);
+  });
+
+  readonly damageStats = computed((): DamageStats | null => {
+    const champion = this.selectedChampion();
+    const final = this.finalStats();
+    const base = this.baseStats();
+    if (!champion || !final || !base || !champion.spells?.length) return null;
+    const ranks = getSpellRanks(this.selectedLevel());
+    return calculateDamageStats(champion.spells, ranks, final, base);
   });
 
   selectChampion(champion: ChampionDetail): void {

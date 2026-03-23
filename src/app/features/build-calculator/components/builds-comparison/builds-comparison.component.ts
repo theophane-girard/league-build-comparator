@@ -40,6 +40,8 @@ export const STAT_DEFS: StatDef[] = [
   { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer', getValue: b => b.finalStats?.effectiveHpPhysical ?? 0 },
   { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer', getValue: b => b.finalStats?.effectiveHpMagical ?? 0 },
   { key: 'totalGold', label: 'Total Gold', format: 'integer', getValue: b => b.totalGold },
+  { key: 'burst', label: 'Burst Damage', format: 'integer', getValue: b => b.damageStats?.burst ?? 0 },
+  { key: 'dps', label: 'DPS', format: 'decimal', getValue: b => b.damageStats?.dps ?? 0 },
 ];
 
 function formatValue(value: number | undefined, format: StatFormat): string {

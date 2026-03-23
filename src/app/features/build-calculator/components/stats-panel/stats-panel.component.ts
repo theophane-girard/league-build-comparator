@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 
 import { ZardIconComponent, type ZardIcon } from '@/shared/components/icon';
+import { FormulaHintComponent } from '@/shared/components/formula-hint/formula-hint.component';
 import { BuildCalculatorService } from '@/shared/services/build-calculator.service';
 
 interface StatRow {
@@ -13,7 +14,7 @@ interface StatRow {
 
 @Component({
   selector: 'app-stats-panel',
-  imports: [ZardIconComponent],
+  imports: [ZardIconComponent, FormulaHintComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section aria-label="Champion stats" class="rounded-lg border bg-card p-4">
@@ -40,6 +41,32 @@ interface StatRow {
           </div>
         }
       </div>
+
+      @if (build.damageStats(); as dmg) {
+        <h2 class="font-semibold mt-6 mb-4">Damage</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2" role="list">
+          <div class="flex items-center gap-3 py-2 px-3 rounded-md bg-muted/30" role="listitem">
+            <i z-icon zType="zap" class="shrink-0 text-muted-foreground" aria-hidden="true"></i>
+            <span class="flex-1 text-sm text-muted-foreground">Burst Damage</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono font-semibold text-sm" [attr.aria-label]="'Burst Damage: ' + formatValue(dmg.burst, 'integer')">
+                {{ formatValue(dmg.burst, 'integer') }}
+              </span>
+              <app-formula-hint [stats]="dmg" />
+            </div>
+          </div>
+          <div class="flex items-center gap-3 py-2 px-3 rounded-md bg-muted/30" role="listitem">
+            <i z-icon zType="gauge" class="shrink-0 text-muted-foreground" aria-hidden="true"></i>
+            <span class="flex-1 text-sm text-muted-foreground">DPS</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-mono font-semibold text-sm" [attr.aria-label]="'DPS: ' + formatValue(dmg.dps, 'decimal')">
+                {{ formatValue(dmg.dps, 'decimal') }}
+              </span>
+              <app-formula-hint [stats]="dmg" />
+            </div>
+          </div>
+        </div>
+      }
     </section>
   `,
 })

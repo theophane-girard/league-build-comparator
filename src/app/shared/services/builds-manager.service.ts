@@ -3,6 +3,8 @@ import { computed, effect, inject, Injectable, signal } from '@angular/core';
 import type { Item } from '@/features/build-calculator/models/item.model';
 import type { SavedBuild } from '@/features/build-calculator/models/build.model';
 import { calculateBaseStats, combineStats, sumItemStats } from '@/shared/utils/stats-calculator';
+import { calculateDamageStats } from '@/shared/utils/damage-calculator';
+import { getSpellRanks } from '@/shared/utils/spell-rank';
 import { BuildCalculatorService } from './build-calculator.service';
 
 @Injectable({ providedIn: 'root' })
@@ -23,7 +25,10 @@ export class BuildsManagerService {
           const baseStats = calculateBaseStats(champion.stats, level);
           const itemBonuses = sumItemStats(build.items.filter((i): i is Item => i !== null));
           const finalStats = combineStats(baseStats, itemBonuses);
-          return { ...build, champion, level, baseStats, finalStats };
+          const damageStats = champion.spells?.length
+            ? calculateDamageStats(champion.spells, getSpellRanks(level), finalStats, baseStats)
+            : undefined;
+          return { ...build, champion, level, baseStats, finalStats, damageStats };
         }),
       );
     });
@@ -53,6 +58,7 @@ export class BuildsManagerService {
     const champion = this.buildCalc.selectedChampion() ?? undefined;
     const finalStats = this.buildCalc.finalStats() ?? undefined;
     const baseStats = this.buildCalc.baseStats() ?? undefined;
+    const damageStats = this.buildCalc.damageStats() ?? undefined;
 
     const items = [...this.buildCalc.selectedItems()];
     const totalGold = items.reduce((sum, item) => sum + (item?.gold.total ?? 0), 0);
@@ -64,7 +70,7 @@ export class BuildsManagerService {
       this.savedBuilds.update(list =>
         list.map(b =>
           b.id === editingId
-            ? { ...b, name, champion, level: this.buildCalc.selectedLevel(), items, baseStats, finalStats, totalGold }
+            ? { ...b, name, champion, level: this.buildCalc.selectedLevel(), items, baseStats, finalStats, totalGold, damageStats }
             : b,
         ),
       );
@@ -79,6 +85,7 @@ export class BuildsManagerService {
         baseStats,
         finalStats,
         totalGold,
+        damageStats,
       };
       this.savedBuilds.update(list => [...list, build]);
     }

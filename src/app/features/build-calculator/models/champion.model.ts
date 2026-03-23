@@ -1,3 +1,27 @@
+export interface SpellModifier {
+  values: number[];
+  units: string[];  // e.g. "", "% AP", "% AD", "% Bonus AD", "% Maximum Health"
+}
+
+export interface SpellLevelingEntry {
+  attribute: string;  // e.g. "Total Damage", "Damage Per Pass"
+  modifiers: SpellModifier[];
+}
+
+export interface ChampionSpell {
+  name: string;
+  description: string;
+  cooldown: number[];
+  leveling: SpellLevelingEntry[];
+  damageType: string | null;
+}
+
+export interface ChampionPassive {
+  name: string;
+  description: string;
+  image: ChampionImage;
+}
+
 export interface ChampionStats {
   hp: number;
   hpperlevel: number;
@@ -43,4 +67,6 @@ export interface ChampionDetail extends ChampionSummary {
   stats: ChampionStats;
   tags: string[];
   lore: string;
+  spells: ChampionSpell[];
+  passive: ChampionPassive;
 }

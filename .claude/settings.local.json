@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(xargs grep:*)",
+      "WebFetch(domain:ddragon.leagueoflegends.com)",
+      "Bash(curl -s \"https://ddragon.leagueoflegends.com/cdn/16.6.1/data/en_US/champion/Ahri.json\")",
+      "Bash(jq .data.Ahri.spells[0])",
+      "WebFetch(domain:cdn.merakianalytics.com)",
+      "Bash(curl -i https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions/Ahri.json)",
+      "Bash(curl:*)",
+      "WebFetch(domain:raw.communitydragon.org)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

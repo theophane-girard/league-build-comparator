@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable, signal } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 
-import type { ChampionDetail, ChampionSummary } from '@/features/build-calculator/models/champion.model';
+import type { ChampionDetail, ChampionSummary, ChampionSpell, ChampionPassive, SpellModifier, SpellLevelingEntry } from '@/features/build-calculator/models/champion.model';
 import type { Item } from '@/features/build-calculator/models/item.model';
 
 const BASE_URL = 'https://ddragon.leagueoflegends.com';
@@ -33,6 +33,12 @@ interface ChampionSummaryRaw {
   image: ChampionSummary['image'];
 }
 
+interface ChampionPassiveRaw {
+  name: string;
+  description: string;
+  image: ChampionDetail['image'];
+}
+
 interface ChampionDetailRaw {
   id: string;
   key: string;
@@ -42,7 +48,44 @@ interface ChampionDetailRaw {
   stats: ChampionDetail['stats'];
   tags: string[];
   lore: string;
+  passive: ChampionPassiveRaw;
 }
+
+interface MerakiSpellModifier {
+  values: number[];
+  units: string[];
+}
+
+interface MerakiSpellLevelingEntry {
+  attribute: string;
+  modifiers: MerakiSpellModifier[];
+}
+
+interface MerakiSpellEffect {
+  description: string;
+  leveling: MerakiSpellLevelingEntry[];
+}
+
+interface MerakiSpell {
+  name: string;
+  blurb: string;
+  effects: MerakiSpellEffect[];
+  cooldown: { modifiers: MerakiSpellModifier[] } | null;
+  damageType: string | null;
+}
+
+interface MerakiChampionData {
+  abilities: {
+    P: MerakiSpell[];
+    Q: MerakiSpell[];
+    W: MerakiSpell[];
+    E: MerakiSpell[];
+    R: MerakiSpell[];
+  };
+  passive: { name: string; description: string };
+}
+
+const MERAKI_BASE_URL = '/meraki-api';
 
 interface ItemRaw {
   name: string;
@@ -110,12 +153,47 @@ export class DdragonService {
     if (cache.has(id)) return cache.get(id)!;
 
     const v = await this.loadVersion();
-    const data = await firstValueFrom(
-      this.http.get<{ data: Record<string, ChampionDetailRaw> }>(
-        `${BASE_URL}/cdn/${v}/data/${this.locale()}/champion/${id}.json`
-      )
-    );
+    const [data, merakiData] = await Promise.all([
+      firstValueFrom(
+        this.http.get<{ data: Record<string, ChampionDetailRaw> }>(
+          `${BASE_URL}/cdn/${v}/data/${this.locale()}/champion/${id}.json`
+        )
+      ),
+      firstValueFrom(
+        this.http.get<MerakiChampionData>(`${MERAKI_BASE_URL}/${id}.json`)
+      ).catch((err: unknown) => {
+        console.error(`[Meraki] Could not load spell data for "${id}":`, err);
+        return null;
+      }),
+    ]);
     const raw = data.data[id];
+
+    const mapMerakiSpell = (s: MerakiSpell): ChampionSpell => ({
+      name: s.name ?? '',
+      description: s.blurb ?? '',
+      cooldown: s.cooldown?.modifiers?.[0]?.values ?? [],
+      leveling: (s.effects ?? []).flatMap(e => e.leveling ?? []).map((l): SpellLevelingEntry => ({
+        attribute: l.attribute ?? '',
+        modifiers: (l.modifiers ?? []).map((m): SpellModifier => ({
+          values: m.values ?? [],
+          units: m.units ?? [],
+        })),
+      })),
+      damageType: s.damageType ?? null,
+    });
+
+    const spells: ChampionSpell[] = merakiData
+      ? (['Q', 'W', 'E', 'R'] as const).map(key => {
+          const spell = merakiData.abilities[key]?.[0];
+          return spell ? mapMerakiSpell(spell) : null;
+        }).filter((s): s is ChampionSpell => s !== null)
+      : [];
+
+    const mapPassive = (p: ChampionPassiveRaw): ChampionPassive => ({
+      name: p.name,
+      description: p.description,
+      image: p.image,
+    });
     const detail: ChampionDetail = {
       id: raw.id,
       key: raw.key,
@@ -125,6 +203,8 @@ export class DdragonService {
       stats: raw.stats,
       tags: raw.tags,
       lore: raw.lore,
+      spells,
+      passive: mapPassive(raw.passive),
     };
     this.championDetailCache.update(m => {
       const next = new Map(m);

@@ -10,6 +10,7 @@ import { LevelSelectorComponent } from '../../components/level-selector/level-se
 import { ItemPickerModalComponent } from '../../components/item-picker-modal/item-picker-modal.component';
 import { SavedBuildsPanelComponent } from '../../components/saved-builds-panel/saved-builds-panel.component';
 import { BuildsComparisonComponent } from '../../components/builds-comparison/builds-comparison.component';
+import { StatsPanelComponent } from '../../components/stats-panel/stats-panel.component';
 import type { Item } from '../../models/item.model';
 
 @Component({
@@ -23,6 +24,7 @@ import type { Item } from '../../models/item.model';
     ItemPickerModalComponent,
     SavedBuildsPanelComponent,
     BuildsComparisonComponent,
+    StatsPanelComponent,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
@@ -34,6 +36,7 @@ import type { Item } from '../../models/item.model';
           @if (build.selectedChampion()) {
             <app-champion-card />
             <app-level-selector />
+            <app-stats-panel />
           }
         </section>
 
