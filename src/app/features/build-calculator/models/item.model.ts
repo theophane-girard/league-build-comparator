@@ -30,6 +30,39 @@ export interface ItemStats {
   PercentMovementSpeedMod?: number;
 }
 
+/** Profile classification for Meraki-enriched items */
+export type ItemProfile = 'activeDamage' | 'passiveDamage' | 'conditional';
+
+export interface ParsedEffectRatio {
+  coeff: number;
+  stat: 'AD' | 'baseAD' | 'bonusAD' | 'AP' | 'armor' | 'magicResist' | 'maxHP';
+}
+
+export interface ItemActiveEffect {
+  name: string;
+  effects: string;
+  cooldown: number | null;
+  ratios: ParsedEffectRatio[];
+}
+
+export interface ItemPassiveEffect {
+  name: string;
+  effects: string;
+  unique: boolean;
+  ratios: ParsedEffectRatio[];
+  procCooldown: number | null;
+}
+
+export interface ItemConditionalBonus {
+  hp?: number;
+  armor?: number;
+  magicResist?: number;
+  attackDamage?: number;
+  abilityPower?: number;
+  critChance?: number;
+  attackSpeedBonus?: number;
+}
+
 export interface Item {
   id: string;
   name: string;
@@ -43,4 +76,9 @@ export interface Item {
   from?: string[];
   into?: string[];
   maps?: Record<string, boolean>;
+  /** Meraki enrichment — present after Meraki data is loaded */
+  profiles?: ItemProfile[];
+  activeEffects?: ItemActiveEffect[];
+  passiveEffects?: ItemPassiveEffect[];
+  conditionalBonus?: ItemConditionalBonus;
 }

@@ -1,4 +1,5 @@
 import type { ChampionSpell, SpellLevelingEntry } from '@/features/build-calculator/models/champion.model';
+import type { Item, ParsedEffectRatio } from '@/features/build-calculator/models/item.model';
 import type { BaseStats, FinalStats } from '@/features/build-calculator/models/computed-stats.model';
 
 export interface SpellRatioContribution {
@@ -17,11 +18,21 @@ export interface SpellDamageBreakdown {
   cooldown: number;
 }
 
+export interface ItemDamageContribution {
+  itemId: string;
+  itemName: string;
+  type: 'active' | 'passive';
+  damage: number;
+  cooldown: number | null;
+  label: string;
+}
+
 export interface DamageStats {
   burst: number;
   dps: number;
   autoAttackDps: number;
   spellBreakdowns: SpellDamageBreakdown[];
+  itemContributions: ItemDamageContribution[];
 }
 
 /** Extracts the stat label from a Meraki unit string, e.g. "% AP" → "AP" */
@@ -116,11 +127,96 @@ function calculateSpellBreakdown(
   return { name: spell.name, rank, baseDamage, ratios, total, cooldown };
 }
 
+// ---------------------------------------------------------------------------
+// Item profile damage contributions
+// ---------------------------------------------------------------------------
+
+function resolveRatioDamage(
+  ratios: ParsedEffectRatio[],
+  finalStats: FinalStats,
+  baseStats: BaseStats,
+): number {
+  const bonusAD = finalStats.attackDamage - baseStats.attackDamage;
+  return ratios.reduce((sum, r) => {
+    let statValue = 0;
+    switch (r.stat) {
+      case 'AD': statValue = finalStats.attackDamage; break;
+      case 'baseAD': statValue = baseStats.attackDamage; break;
+      case 'bonusAD': statValue = bonusAD; break;
+      case 'AP': statValue = finalStats.abilityPower; break;
+      case 'armor': statValue = finalStats.armor; break;
+      case 'magicResist': statValue = finalStats.magicResist; break;
+      case 'maxHP': statValue = finalStats.hp; break;
+    }
+    return sum + r.coeff * statValue;
+  }, 0);
+}
+
+function buildItemContributions(
+  items: (Item | null)[],
+  itemToggles: Map<string, boolean>,
+  finalStats: FinalStats,
+  baseStats: BaseStats,
+): ItemDamageContribution[] {
+  const contributions: ItemDamageContribution[] = [];
+
+  for (const item of items) {
+    if (!item?.profiles?.length) continue;
+
+    // Active damage — default enabled, toggle key: `${id}_active`
+    if (item.profiles.includes('activeDamage') && item.activeEffects?.length) {
+      const enabled = itemToggles.get(`${item.id}_active`) !== false;
+      if (enabled) {
+        for (const effect of item.activeEffects) {
+          const damage = resolveRatioDamage(effect.ratios, finalStats, baseStats);
+          if (damage > 0) {
+            const ratioLabel = effect.ratios
+              .map(r => `${Math.round(r.coeff * 100)}% ${r.stat}`)
+              .join(' + ');
+            contributions.push({
+              itemId: item.id,
+              itemName: item.name,
+              type: 'active',
+              damage,
+              cooldown: effect.cooldown,
+              label: `${effect.name} (${ratioLabel})`,
+            });
+          }
+        }
+      }
+    }
+
+    // Passive proc damage — always enabled (no toggle per user request)
+    if (item.profiles.includes('passiveDamage') && item.passiveEffects?.length) {
+      for (const effect of item.passiveEffects) {
+        const damage = resolveRatioDamage(effect.ratios, finalStats, baseStats);
+        if (damage > 0) {
+          const ratioLabel = effect.ratios
+            .map(r => `${Math.round(r.coeff * 100)}% ${r.stat}`)
+            .join(' + ');
+          contributions.push({
+            itemId: item.id,
+            itemName: item.name,
+            type: 'passive',
+            damage,
+            cooldown: effect.procCooldown,
+            label: `${effect.name} (${ratioLabel})`,
+          });
+        }
+      }
+    }
+  }
+
+  return contributions;
+}
+
 export function calculateDamageStats(
   spells: ChampionSpell[],
   spellRanks: [number, number, number, number],
   finalStats: FinalStats,
   baseStats: BaseStats,
+  items: (Item | null)[] = [],
+  itemToggles: Map<string, boolean> = new Map(),
 ): DamageStats {
   const bonusAD = finalStats.attackDamage - baseStats.attackDamage;
 
@@ -129,14 +225,31 @@ export function calculateDamageStats(
     return calculateSpellBreakdown(spell, rank, finalStats, bonusAD);
   });
 
+  const itemContributions = buildItemContributions(items, itemToggles, finalStats, baseStats);
+
   const critMultiplier = 1 + (finalStats.critChance / 100) * 0.75;
   const autoAttackDps = finalStats.attackDamage * finalStats.attackSpeed * critMultiplier;
 
-  const burst = spellBreakdowns.reduce((s, b) => s + b.total, 0);
+  const spellBurst = spellBreakdowns.reduce((s, b) => s + b.total, 0);
+  const activeBurst = itemContributions
+    .filter(c => c.type === 'active')
+    .reduce((s, c) => s + c.damage, 0);
+
+  const burst = spellBurst + activeBurst;
+
   const spellDps = spellBreakdowns.reduce(
     (s, b) => s + (b.cooldown > 0 ? b.total / b.cooldown : 0),
     0,
   );
+  const passiveDps = itemContributions
+    .filter(c => c.type === 'passive')
+    .reduce((s, c) => s + (c.cooldown && c.cooldown > 0 ? c.damage / c.cooldown : 0), 0);
 
-  return { burst, dps: autoAttackDps + spellDps, autoAttackDps, spellBreakdowns };
+  return {
+    burst,
+    dps: autoAttackDps + spellDps + passiveDps,
+    autoAttackDps,
+    spellBreakdowns,
+    itemContributions,
+  };
 }

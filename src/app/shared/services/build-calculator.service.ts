@@ -2,10 +2,10 @@ import { computed, Injectable, signal } from '@angular/core';
 
 import type { ChampionDetail } from '@/features/build-calculator/models/champion.model';
 import type { Item } from '@/features/build-calculator/models/item.model';
-import type { FinalStats } from '@/features/build-calculator/models/computed-stats.model';
+import type { FinalStats, ItemBonuses } from '@/features/build-calculator/models/computed-stats.model';
 import type { DamageStats } from '@/shared/utils/damage-calculator';
 import type { SavedBuild } from '@/features/build-calculator/models/build.model';
-import { calculateBaseStats, combineStats, sumItemStats } from '@/shared/utils/stats-calculator';
+import { calculateBaseStats, combineStats, sumItemStats, sumConditionalBonuses } from '@/shared/utils/stats-calculator';
 import { calculateDamageStats } from '@/shared/utils/damage-calculator';
 import { getSpellRanks } from '@/shared/utils/spell-rank';
 
@@ -15,6 +15,12 @@ export class BuildCalculatorService {
   readonly selectedLevel = signal<number>(1);
   readonly selectedItems = signal<(Item | null)[]>([null, null, null, null, null, null]);
   readonly activeSlotIndex = signal<number | null>(null);
+
+  /**
+   * Toggles map keyed by `${itemId}_active` or `${itemId}_conditional`.
+   * Active items default to true (enabled). Conditional items default to false (disabled).
+   */
+  readonly itemToggles = signal<Map<string, boolean>>(new Map());
 
   readonly baseStats = computed(() => {
     const champion = this.selectedChampion();
@@ -32,7 +38,23 @@ export class BuildCalculatorService {
     const base = this.baseStats();
     if (!base) return null;
     const bonuses = this.itemBonuses();
-    return combineStats(base, bonuses);
+    const items = this.selectedItems().filter((i): i is Item => i !== null);
+    const toggles = this.itemToggles();
+
+    const conditional = sumConditionalBonuses(items, toggles);
+    const combined: ItemBonuses = {
+      hp: bonuses.hp + (conditional.hp ?? 0),
+      mp: bonuses.mp,
+      armor: bonuses.armor + (conditional.armor ?? 0),
+      magicResist: bonuses.magicResist + (conditional.magicResist ?? 0),
+      attackDamage: bonuses.attackDamage + (conditional.attackDamage ?? 0),
+      abilityPower: bonuses.abilityPower + (conditional.abilityPower ?? 0),
+      movementSpeed: bonuses.movementSpeed,
+      critChance: bonuses.critChance + (conditional.critChance ?? 0),
+      attackSpeedBonus: bonuses.attackSpeedBonus + (conditional.attackSpeedBonus ?? 0),
+    };
+
+    return combineStats(base, combined);
   });
 
   readonly damageStats = computed((): DamageStats | null => {
@@ -41,7 +63,14 @@ export class BuildCalculatorService {
     const base = this.baseStats();
     if (!champion || !final || !base || !champion.spells?.length) return null;
     const ranks = getSpellRanks(this.selectedLevel());
-    return calculateDamageStats(champion.spells, ranks, final, base);
+    return calculateDamageStats(
+      champion.spells,
+      ranks,
+      final,
+      base,
+      this.selectedItems(),
+      this.itemToggles(),
+    );
   });
 
   selectChampion(champion: ChampionDetail): void {
@@ -87,11 +116,17 @@ export class BuildCalculatorService {
     this.selectedLevel.set(build.level);
     this.selectedItems.set([...build.items]);
     this.activeSlotIndex.set(null);
+    if (build.itemToggles) {
+      this.itemToggles.set(new Map(Object.entries(build.itemToggles)));
+    } else {
+      this.itemToggles.set(new Map());
+    }
   }
 
   clearItems(): void {
     this.selectedItems.set([null, null, null, null, null, null]);
     this.activeSlotIndex.set(null);
+    this.itemToggles.set(new Map());
   }
 
   clearBuild(): void {
@@ -99,5 +134,34 @@ export class BuildCalculatorService {
     this.selectedLevel.set(1);
     this.selectedItems.set([null, null, null, null, null, null]);
     this.activeSlotIndex.set(null);
+    this.itemToggles.set(new Map());
+  }
+
+  getActiveToggle(itemId: string): boolean {
+    return this.itemToggles().get(`${itemId}_active`) !== false;
+  }
+
+  getConditionalToggle(itemId: string): boolean {
+    return this.itemToggles().get(`${itemId}_conditional`) === true;
+  }
+
+  setActiveToggle(itemId: string, enabled: boolean): void {
+    this.itemToggles.update(m => {
+      const next = new Map(m);
+      next.set(`${itemId}_active`, enabled);
+      return next;
+    });
+  }
+
+  setConditionalToggle(itemId: string, enabled: boolean): void {
+    this.itemToggles.update(m => {
+      const next = new Map(m);
+      next.set(`${itemId}_conditional`, enabled);
+      return next;
+    });
+  }
+
+  getTogglesRecord(): Record<string, boolean> {
+    return Object.fromEntries(this.itemToggles());
   }
 }

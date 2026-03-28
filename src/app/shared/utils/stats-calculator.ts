@@ -46,6 +46,31 @@ export function sumItemStats(items: Item[]): ItemBonuses {
   return bonuses;
 }
 
+/** Returns the extra bonuses from conditional items that have been toggled ON */
+export function sumConditionalBonuses(
+  items: Item[],
+  itemToggles: Map<string, boolean>,
+): Partial<ItemBonuses> {
+  const result: Partial<ItemBonuses> = {};
+
+  for (const item of items) {
+    if (!item.profiles?.includes('conditional')) continue;
+    if (!item.conditionalBonus) continue;
+    if (itemToggles.get(`${item.id}_conditional`) !== true) continue;
+
+    const cb = item.conditionalBonus;
+    if (cb.hp) result.hp = (result.hp ?? 0) + cb.hp;
+    if (cb.armor) result.armor = (result.armor ?? 0) + cb.armor;
+    if (cb.magicResist) result.magicResist = (result.magicResist ?? 0) + cb.magicResist;
+    if (cb.attackDamage) result.attackDamage = (result.attackDamage ?? 0) + cb.attackDamage;
+    if (cb.abilityPower) result.abilityPower = (result.abilityPower ?? 0) + cb.abilityPower;
+    if (cb.critChance) result.critChance = (result.critChance ?? 0) + cb.critChance;
+    if (cb.attackSpeedBonus) result.attackSpeedBonus = (result.attackSpeedBonus ?? 0) + cb.attackSpeedBonus;
+  }
+
+  return result;
+}
+
 export function combineStats(base: BaseStats, bonuses: ItemBonuses): FinalStats {
   const hp = base.hp + bonuses.hp;
   const armor = base.armor + bonuses.armor;

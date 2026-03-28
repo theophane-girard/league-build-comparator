@@ -13,4 +13,6 @@ export interface SavedBuild {
   finalStats?: FinalStats;
   totalGold: number;
   damageStats?: DamageStats;
+  /** Serialized item toggles: keys are `${itemId}_active` or `${itemId}_conditional` */
+  itemToggles?: Record<string, boolean>;
 }

@@ -7,5 +7,14 @@
       "^/meraki-api": ""
     },
     "logLevel": "info"
+  },
+  "/meraki-api-items": {
+    "target": "https://cdn.merakianalytics.com",
+    "secure": true,
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/meraki-api-items": "/riot/lol/resources/latest/en-US/items.json"
+    },
+    "logLevel": "info"
   }
 }

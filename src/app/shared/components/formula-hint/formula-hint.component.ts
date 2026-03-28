@@ -52,6 +52,25 @@ function fmtCoeff(c: number): string {
             }
           }
 
+          <!-- Item contributions -->
+          @if (s.itemContributions.length > 0) {
+            @for (contrib of s.itemContributions; track contrib.label) {
+              <div class="border-t border-border pt-2">
+                <p class="font-semibold text-foreground">
+                  {{ contrib.itemName }}
+                  <span class="text-muted-foreground font-normal text-[10px] ml-1">({{ contrib.type }})</span>
+                </p>
+                <div class="flex justify-between mt-1">
+                  <span class="text-muted-foreground font-mono">{{ contrib.label }}</span>
+                  <span class="text-foreground font-semibold font-mono">{{ fmt(contrib.damage) }}</span>
+                </div>
+                @if (contrib.type === 'passive' && contrib.cooldown) {
+                  <p class="text-muted-foreground font-mono text-right">{{ fmt(contrib.damage / contrib.cooldown) }}/s (cd: {{ contrib.cooldown }}s)</p>
+                }
+              </div>
+            }
+          }
+
           <!-- Totals -->
           <div class="border-t border-border pt-2 space-y-1">
             <div class="flex justify-between font-semibold text-foreground">
@@ -65,7 +84,7 @@ function fmtCoeff(c: number): string {
           </div>
 
           <p class="text-muted-foreground/70 border-t border-border pt-2">
-            ⚠ Approx. — base cooldowns, no AH/CDR, passives excluded
+            ⚠ Approx. — base cooldowns, no AH/CDR
           </p>
         }
       </z-popover>

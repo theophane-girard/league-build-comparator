@@ -4,6 +4,12 @@ import { firstValueFrom } from 'rxjs';
 
 import type { ChampionDetail, ChampionSummary, ChampionSpell, ChampionPassive, SpellModifier, SpellLevelingEntry } from '@/features/build-calculator/models/champion.model';
 import type { Item } from '@/features/build-calculator/models/item.model';
+import {
+  buildActiveEffects,
+  buildPassiveEffects,
+  classifyItemProfiles,
+  computeConditionalBonus,
+} from '@/shared/utils/item-profile';
 
 const BASE_URL = 'https://ddragon.leagueoflegends.com';
 
@@ -86,6 +92,11 @@ interface MerakiChampionData {
 }
 
 const MERAKI_BASE_URL = '/meraki-api';
+const MERAKI_ITEMS_URL = '/meraki-api-items';
+
+// ---------------------------------------------------------------------------
+// DDragon item raw types
+// ---------------------------------------------------------------------------
 
 interface ItemRaw {
   name: string;
@@ -99,6 +110,53 @@ interface ItemRaw {
   from?: string[];
   into?: string[];
   maps?: Record<string, boolean>;
+}
+
+// ---------------------------------------------------------------------------
+// Meraki item raw types
+// ---------------------------------------------------------------------------
+
+type MerakiStatEntry = { flat: number; percent: number; perLevel: number; percentPerLevel: number; percentBase: number; percentBonus: number };
+type MerakiItemStats = Record<string, MerakiStatEntry>;
+
+interface MerakiPassiveRaw {
+  name: string;
+  effects: string;
+  unique: boolean;
+  mythic: boolean;
+  range: number | null;
+  cooldown: number | null;
+  stats: MerakiItemStats;
+}
+
+interface MerakiActiveRaw {
+  unique: boolean;
+  name: string;
+  effects: string;
+  range: number | null;
+  cooldown: number | null;
+  stats?: MerakiItemStats;
+}
+
+interface MerakiItemRaw {
+  id: number;
+  name: string;
+  tier: number;
+  rank: string[];
+  removed: boolean;
+  noEffects: boolean;
+  buildsFrom: number[];
+  buildsInto: number[];
+  stats: MerakiItemStats;
+  passives: MerakiPassiveRaw[];
+  active: MerakiActiveRaw[];
+  shop: {
+    prices: { total: number; combined: number; sell: number };
+    purchasable: boolean;
+    tags: string[];
+  };
+  maps?: string[];
+  iconOverlay: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -217,31 +275,60 @@ export class DdragonService {
   async loadItems(): Promise<void> {
     if (this.itemsLoaded) return;
     const v = await this.loadVersion();
-    const data = await firstValueFrom(
-      this.http.get<{ data: Record<string, ItemRaw> }>(
-        `${BASE_URL}/cdn/${v}/data/${this.locale()}/item.json`
-      )
-    );
-    const mapEntry = ([id, item]: [string, ItemRaw]): Item => ({
-      id,
-      name: item.name,
-      description: item.description,
-      plaintext: item.plaintext,
-      image: item.image,
-      gold: item.gold,
-      tags: item.tags ?? [],
-      stats: item.stats,
-      depth: item.depth,
-      from: item.from,
-      into: item.into,
-      maps: item.maps,
-    });
+
+    const [ddragonData, merakiItems] = await Promise.all([
+      firstValueFrom(
+        this.http.get<{ data: Record<string, ItemRaw> }>(
+          `${BASE_URL}/cdn/${v}/data/${this.locale()}/item.json`
+        )
+      ),
+      firstValueFrom(
+        this.http.get<Record<string, MerakiItemRaw>>(MERAKI_ITEMS_URL)
+      ).catch((err: unknown) => {
+        console.error('[Meraki] Could not load item enrichment data:', err);
+        return null;
+      }),
+    ]);
+
+    const mapEntry = ([id, item]: [string, ItemRaw]): Item => {
+      const base: Item = {
+        id,
+        name: item.name,
+        description: item.description,
+        plaintext: item.plaintext,
+        image: item.image,
+        gold: item.gold,
+        tags: item.tags ?? [],
+        stats: item.stats,
+        depth: item.depth,
+        from: item.from,
+        into: item.into,
+        maps: item.maps,
+      };
+
+      if (merakiItems) {
+        const meraki = merakiItems[id];
+        if (meraki) {
+          const passives = meraki.passives ?? [];
+          const active = meraki.active ?? [];
+          const profiles = classifyItemProfiles(passives, active);
+          base.profiles = profiles.length > 0 ? profiles : undefined;
+          base.activeEffects = buildActiveEffects(active);
+          base.passiveEffects = buildPassiveEffects(passives);
+          base.conditionalBonus = profiles.includes('conditional')
+            ? computeConditionalBonus(passives, meraki.stats ?? {})
+            : undefined;
+        }
+      }
+
+      return base;
+    };
 
     const rawById = new Map<string, Item>();
-    Object.entries(data.data).forEach(entry => rawById.set(entry[0], mapEntry(entry)));
+    Object.entries(ddragonData.data).forEach(entry => rawById.set(entry[0], mapEntry(entry)));
     this.rawItemsById.set(rawById);
 
-    const list: Item[] = Object.entries(data.data)
+    const list: Item[] = Object.entries(ddragonData.data)
       .filter(([, item]) =>
         item.gold.purchasable &&
         item.gold.total > 0 &&

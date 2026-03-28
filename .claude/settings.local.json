@@ -10,7 +10,12 @@
       "Bash(curl -i https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions/Ahri.json)",
       "Bash(curl:*)",
       "WebFetch(domain:raw.communitydragon.org)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(python3:*)",
+      "Bash(echo $TEMP)",
+      "Read(//c/Users/Théophane/Documents/zard-test/**)",
+      "Bash(__NEW_LINE_a3e59ecd95b9508b__ wc:*)",
+      "Bash(node:*)"
     ]
   }
 }

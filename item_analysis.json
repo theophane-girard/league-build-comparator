@@ -1,0 +1,63 @@
+{
+  "REQUEST_SUMMARY": {
+    "source": "https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/items.json",
+    "items_analyzed": ["3032", "6665", "3078", "6653"],
+    "total_items_in_file": 2556
+  },
+  
+  "KEY_INSIGHTS": {
+    "conditional_stats_storage": {
+      "finding": "Conditional stats (like Jak'Sho gaining armor/MR over time) are NOT stored in the stats object",
+      "evidence": "Jak'Sho passive 'Voidborn Resilience' describes 30% bonus armor/MR increase, but passive.stats object contains all zeros",
+      "where_stored": "Effects text field with {{as|...}} markup only",
+      "implication": "Game engine parses the effects text to implement logic, JSON provides description only"
+    },
+    
+    "trinity_force_spellblade_damage": {
+      "finding": "Spellblade damage (200% base AD) is stored in effects text only",
+      "base_stats_provided": "attackDamage.flat = 36",
+      "scaling_stored_as": "Text in effects: '{{as|200% '''base''' AD}} {{as|'''bonus''' physical damage}}'",
+      "implication": "Actual damage calculation done by game engine, not stored as numeric field"
+    },
+    
+    "active_damage_representation": {
+      "finding": "Active abilities with damage use text markup like {{pp|...}}",
+      "example_redemption": "{{pp|150 to 350|type=target's level}} means scales from 150 at level 1 to 350 at level 18",
+      "example_liandry": "1% of target's maximum health per tick stored as text, not numeric",
+      "pattern": "Damage values in {{pp|...}} for level scaling, {{as|...}} for emphasis"
+    },
+    
+    "stat_subfield_usage": {
+      "flat": "Most common - used for base item stats (50 AD, 45 armor, etc.)",
+      "percent": "Used for scaling bonuses (e.g., 10% movement speed per stack)",
+      "perLevel": "Rare - mostly internal use",
+      "percentPerLevel": "Rare - mostly internal use",
+      "percentBase": "Rare - alternative to percent in some contexts",
+      "percentBonus": "Rare - percent of bonus stats only"
+    }
+  },
+  
+  "ITEMS_WITH_ACTIVE_ABILITIES": {
+    "total_count": 48,
+    "examples": [
+      {
+        "id": "2065",
+        "name": "Shurelya's Battlesong",
+        "active_name": "Inspiring Speech",
+        "active_effect": "Grants 30% bonus movement speed for 4 seconds to you and nearby allies"
+      },
+      {
+        "id": "3107",
+        "name": "Redemption",
+        "active_name": "Intervention",
+        "active_effect": "5500 range beam - heal allies 150-350 (scales with level), damage enemies 10% max health as true damage"
+      },
+      {
+        "id": "3109",
+        "name": "Knight's Vow",
+        "active_name": "Pledge",
+        "active_effect": "Designate target ally - form tether for damage redirection"
+      }
+    ]
+  }
+}
