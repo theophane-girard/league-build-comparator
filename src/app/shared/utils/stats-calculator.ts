@@ -50,6 +50,7 @@ export function sumItemStats(items: Item[]): ItemBonuses {
 export function sumConditionalBonuses(
   items: Item[],
   itemToggles: Map<string, boolean>,
+  itemBonuses: ItemBonuses,
 ): Partial<ItemBonuses> {
   const result: Partial<ItemBonuses> = {};
 
@@ -66,6 +67,11 @@ export function sumConditionalBonuses(
     if (cb.abilityPower) result.abilityPower = (result.abilityPower ?? 0) + cb.abilityPower;
     if (cb.critChance) result.critChance = (result.critChance ?? 0) + cb.critChance;
     if (cb.attackSpeedBonus) result.attackSpeedBonus = (result.attackSpeedBonus ?? 0) + cb.attackSpeedBonus;
+    if (cb.armorRatio) result.armor = (result.armor ?? 0) + cb.armorRatio * itemBonuses.armor;
+    if (cb.magicResistRatio) result.magicResist = (result.magicResist ?? 0) + cb.magicResistRatio * itemBonuses.magicResist;
+    if (cb.hpRatio) result.hp = (result.hp ?? 0) + cb.hpRatio * itemBonuses.hp;
+    if (cb.attackDamageRatio) result.attackDamage = (result.attackDamage ?? 0) + cb.attackDamageRatio * itemBonuses.attackDamage;
+    if (cb.abilityPowerRatio) result.abilityPower = (result.abilityPower ?? 0) + cb.abilityPowerRatio * itemBonuses.abilityPower;
   }
 
   return result;

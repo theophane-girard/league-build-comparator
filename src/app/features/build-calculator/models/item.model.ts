@@ -54,6 +54,7 @@ export interface ItemPassiveEffect {
 }
 
 export interface ItemConditionalBonus {
+  /** Flat bonuses (applied as-is) */
   hp?: number;
   armor?: number;
   magicResist?: number;
@@ -61,6 +62,12 @@ export interface ItemConditionalBonus {
   abilityPower?: number;
   critChance?: number;
   attackSpeedBonus?: number;
+  /** Ratio bonuses: bonus = ratio × total bonus stat from all items */
+  armorRatio?: number;
+  magicResistRatio?: number;
+  hpRatio?: number;
+  attackDamageRatio?: number;
+  abilityPowerRatio?: number;
 }
 
 export interface Item {

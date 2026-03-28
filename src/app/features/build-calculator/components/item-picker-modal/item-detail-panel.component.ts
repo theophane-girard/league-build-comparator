@@ -161,6 +161,12 @@ import type { Item } from '../../models/item.model';
                     <span class="text-sm font-medium">Apply stacking bonus</span>
                     <span class="text-xs text-muted-foreground">
                       @if (item.conditionalBonus) {
+                        @if (item.conditionalBonus.armorRatio) {
+                          +{{ fmtPct(item.conditionalBonus.armorRatio) }}% bonus armor
+                        }
+                        @if (item.conditionalBonus.magicResistRatio) {
+                          +{{ fmtPct(item.conditionalBonus.magicResistRatio) }}% bonus MR
+                        }
                         @if (item.conditionalBonus.armor) {
                           +{{ fmtBonus(item.conditionalBonus.armor) }} armor
                         }
@@ -245,5 +251,9 @@ export class ItemDetailPanelComponent {
 
   protected fmtBonus(n: number): string {
     return (Math.round(n * 10) / 10).toString();
+  }
+
+  protected fmtPct(ratio: number): string {
+    return Math.round(ratio * 100).toString();
   }
 }

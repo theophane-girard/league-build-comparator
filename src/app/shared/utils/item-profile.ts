@@ -6,8 +6,6 @@ import type {
   ParsedEffectRatio,
 } from '@/features/build-calculator/models/item.model';
 
-type MerakiStatEntry = { flat: number; percent: number };
-type MerakiItemStats = Record<string, MerakiStatEntry>;
 
 // ---------------------------------------------------------------------------
 // Effects text parsing
@@ -94,7 +92,7 @@ export function classifyItemProfiles(
 ): ItemProfile[] {
   const profiles: ItemProfile[] = [];
 
-  if (active.some(a => hasScalingRatio(a.effects))) {
+  if (active.length > 0) {
     profiles.push('activeDamage');
   }
 
@@ -138,14 +136,8 @@ export function buildPassiveEffects(
     .filter(p => p.ratios.length > 0);
 }
 
-/**
- * Estimates the max conditional bonus stats by parsing the effects text.
- * Approximation: percentage is applied against the item's own base stats,
- * not total bonus stats (which would require knowing all equipped items).
- */
 export function computeConditionalBonus(
   passives: { name: string; effects: string }[],
-  itemStats: MerakiItemStats,
 ): ItemConditionalBonus {
   const bonus: ItemConditionalBonus = {};
 
@@ -164,12 +156,10 @@ export function computeConditionalBonus(
 
     if (hasArmor || hasMR) {
       if (hasArmor) {
-        const v = getStatFlat(itemStats, 'armor');
-        if (v > 0) bonus.armor = (bonus.armor ?? 0) + v * multiplier;
+        bonus.armorRatio = (bonus.armorRatio ?? 0) + multiplier;
       }
       if (hasMR) {
-        const v = getStatFlat(itemStats, 'magicresistance');
-        if (v > 0) bonus.magicResist = (bonus.magicResist ?? 0) + v * multiplier;
+        bonus.magicResistRatio = (bonus.magicResistRatio ?? 0) + multiplier;
       }
     } else if (lower.includes('crit') || lower.includes('critical')) {
       // "X% per stack, up to Y stacks" pattern
@@ -185,11 +175,3 @@ export function computeConditionalBonus(
   return bonus;
 }
 
-/** Case-insensitive stat lookup across Meraki's inconsistent casing */
-function getStatFlat(stats: MerakiItemStats, key: string): number {
-  const lower = key.toLowerCase();
-  for (const k of Object.keys(stats)) {
-    if (k.toLowerCase() === lower) return stats[k]?.flat ?? 0;
-  }
-  return 0;
-}

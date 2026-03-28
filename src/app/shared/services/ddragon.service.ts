@@ -316,7 +316,7 @@ export class DdragonService {
           base.activeEffects = buildActiveEffects(active);
           base.passiveEffects = buildPassiveEffects(passives);
           base.conditionalBonus = profiles.includes('conditional')
-            ? computeConditionalBonus(passives, meraki.stats ?? {})
+            ? computeConditionalBonus(passives)
             : undefined;
         }
       }

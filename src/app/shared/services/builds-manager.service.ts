@@ -26,7 +26,7 @@ export class BuildsManagerService {
           const nonNullItems = build.items.filter((i): i is Item => i !== null);
           const toggles = new Map<string, boolean>(Object.entries(build.itemToggles ?? {}));
           const itemBonuses = sumItemStats(nonNullItems);
-          const conditional = sumConditionalBonuses(nonNullItems, toggles);
+          const conditional = sumConditionalBonuses(nonNullItems, toggles, itemBonuses);
           const finalStats = combineStats(baseStats, {
             hp: itemBonuses.hp + (conditional.hp ?? 0),
             mp: itemBonuses.mp,

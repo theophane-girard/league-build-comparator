@@ -41,7 +41,7 @@ export class BuildCalculatorService {
     const items = this.selectedItems().filter((i): i is Item => i !== null);
     const toggles = this.itemToggles();
 
-    const conditional = sumConditionalBonuses(items, toggles);
+    const conditional = sumConditionalBonuses(items, toggles, bonuses);
     const combined: ItemBonuses = {
       hp: bonuses.hp + (conditional.hp ?? 0),
       mp: bonuses.mp,
