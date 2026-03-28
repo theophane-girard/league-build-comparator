@@ -68,16 +68,19 @@ const CONDITIONAL_KEYWORDS = [
 
 const PASSIVE_DAMAGE_PATTERN_NAMES = ['spellblade'];
 
-function hasScalingRatio(effects: string): boolean {
+function hasScalingRatio(effects: string | null | undefined): boolean {
+  if (!effects) return false;
   return /\{\{as\|\d/.test(effects);
 }
 
-function isConditionalEffects(effects: string): boolean {
+function isConditionalEffects(effects: string | null | undefined): boolean {
+  if (!effects) return false;
   const lower = effects.toLowerCase();
   return CONDITIONAL_KEYWORDS.some(kw => lower.includes(kw));
 }
 
-function isPassiveDamageByName(name: string): boolean {
+function isPassiveDamageByName(name: string | null | undefined): boolean {
+  if (!name) return false;
   return PASSIVE_DAMAGE_PATTERN_NAMES.some(n => name.toLowerCase().includes(n));
 }
 

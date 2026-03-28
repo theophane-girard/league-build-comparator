@@ -92,7 +92,7 @@ interface MerakiChampionData {
 }
 
 const MERAKI_BASE_URL = '/meraki-api';
-const MERAKI_ITEMS_URL = '/meraki-api-items';
+const MERAKI_ITEMS_URL = '/meraki-items';
 
 // ---------------------------------------------------------------------------
 // DDragon item raw types

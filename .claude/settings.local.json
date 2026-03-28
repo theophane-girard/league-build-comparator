@@ -15,7 +15,15 @@
       "Bash(echo $TEMP)",
       "Read(//c/Users/Théophane/Documents/zard-test/**)",
       "Bash(__NEW_LINE_a3e59ecd95b9508b__ wc:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__list_network_requests",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__list_console_messages",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__take_snapshot",
+      "mcp__chrome-devtools__click"
     ]
   }
 }
