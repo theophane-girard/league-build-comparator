@@ -91,8 +91,8 @@ interface MerakiChampionData {
   passive: { name: string; description: string };
 }
 
-const MERAKI_BASE_URL = '/meraki-api';
-const MERAKI_ITEMS_URL = '/meraki-items';
+const MERAKI_BASE_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions';
+const MERAKI_ITEMS_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/items.json';
 
 // ---------------------------------------------------------------------------
 // DDragon item raw types
