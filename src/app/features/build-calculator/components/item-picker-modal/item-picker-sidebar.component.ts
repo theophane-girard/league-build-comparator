@@ -1,10 +1,13 @@
 import { ChangeDetectionStrategy, Component, inject, input, output } from '@angular/core';
+import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import { ZardIconComponent } from '@/shared/components/icon';
 import type { ZardIcon } from '@/shared/components/icon';
 import { ZardInputDirective } from '@/shared/components/input';
 import { ZardInputGroupComponent } from '@/shared/components/input-group';
+import { ZardPopoverDirective, ZardPopoverComponent } from '@/shared/components/popover';
 import { DdragonService } from '@/shared/services/ddragon.service';
+import { formatItemDescription } from '@/shared/utils/format-item-description';
 import type { Item } from '../../models/item.model';
 
 interface ItemCategory {
@@ -15,7 +18,7 @@ interface ItemCategory {
 
 @Component({
   selector: 'app-item-picker-sidebar',
-  imports: [ZardIconComponent, ZardInputDirective, ZardInputGroupComponent],
+  imports: [ZardIconComponent, ZardInputDirective, ZardInputGroupComponent, ZardPopoverDirective, ZardPopoverComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'contents' },
   template: `
@@ -78,6 +81,29 @@ interface ItemCategory {
           } @else {
             <div class="grid grid-cols-5 gap-1.5">
               @for (item of filteredItems(); track item.id) {
+                <ng-template #itemTooltip>
+                  <z-popover class="w-56 p-3">
+                    <div class="flex items-center gap-2 mb-2">
+                      <img
+                        [src]="ddragon.getItemImageUrl(item.id)"
+                        [alt]="item.name"
+                        width="40"
+                        height="40"
+                        class="w-10 h-10 rounded shrink-0"
+                      />
+                      <div class="min-w-0">
+                        <p class="font-semibold text-sm leading-tight">{{ item.name }}</p>
+                        <p class="text-xs text-yellow-500">{{ item.gold.total }} gold</p>
+                      </div>
+                    </div>
+                    @if (item.description) {
+                      <div
+                        class="text-xs leading-relaxed text-muted-foreground border-t border-border pt-2 mt-1"
+                        [innerHTML]="getItemDescription(item)"
+                      ></div>
+                    }
+                  </z-popover>
+                </ng-template>
                 <button
                   type="button"
                   class="cursor-pointer w-full aspect-square rounded border transition-colors overflow-hidden
@@ -87,7 +113,10 @@ interface ItemCategory {
                     : 'border-border hover:border-primary/70'"
                   [attr.aria-label]="item.name + ', cost: ' + item.gold.total + ' gold'"
                   [attr.aria-pressed]="previewedItemId() === item.id"
-                  [title]="item.name"
+                  zPopover
+                  [zContent]="itemTooltip"
+                  zTrigger="hover"
+                  zPlacement="right"
                   (click)="itemSelect.emit(item)"
                 >
                   <img
@@ -109,6 +138,7 @@ interface ItemCategory {
 })
 export class ItemPickerSidebarComponent {
   protected readonly ddragon = inject(DdragonService);
+  private readonly sanitizer = inject(DomSanitizer);
 
   readonly filteredItems = input.required<Item[]>();
   readonly previewedItemId = input<string | undefined>(undefined);
@@ -123,5 +153,9 @@ export class ItemPickerSidebarComponent {
 
   protected onSearchInput(event: Event): void {
     this.searchChange.emit((event.target as HTMLInputElement).value);
+  }
+
+  protected getItemDescription(item: Item): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(formatItemDescription(item.description, item));
   }
 }

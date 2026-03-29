@@ -193,7 +193,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     const item = this.previewedItem();
     if (!item?.description) return '';
     return this.sanitizer.bypassSecurityTrustHtml(
-      formatItemDescription(item.description)
+      formatItemDescription(item.description, item)
     );
   });
 

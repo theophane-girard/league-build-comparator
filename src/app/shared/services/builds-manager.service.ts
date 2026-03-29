@@ -117,6 +117,14 @@ export class BuildsManagerService {
     }
   }
 
+  renameBuild(id: string, name: string): void {
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    this.savedBuilds.update(list =>
+      list.map(b => b.id === id ? { ...b, name: trimmed } : b)
+    );
+  }
+
   removeBuild(id: string): void {
     this.savedBuilds.update(list => list.filter(b => b.id !== id));
   }

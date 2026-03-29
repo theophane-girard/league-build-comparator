@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, inject, input, signal } from '@angular/core';
 import { DomSanitizer, type SafeHtml } from '@angular/platform-browser';
 
 import { ZardButtonComponent } from '@/shared/components/button';
@@ -36,8 +36,29 @@ import type { SavedBuild } from '../../models/build.model';
             <i z-icon zType="user"></i>
           </div>
         }
-        <div class="min-w-0">
-          <p class="font-semibold text-sm truncate">{{ build().name }}</p>
+        <div class="min-w-0 flex-1">
+          <!-- Editable name -->
+          @if (isEditing()) {
+            <input
+              class="font-semibold text-sm w-full bg-transparent border-b border-primary outline-none pb-0.5"
+              [value]="editingName()"
+              (input)="editingName.set($any($event.target).value)"
+              (blur)="saveName()"
+              (keydown.enter)="saveName()"
+              (keydown.escape)="isEditing.set(false)"
+              aria-label="Build name"
+            />
+          } @else {
+            <p
+              class="font-semibold text-sm truncate cursor-pointer hover:text-primary transition-colors"
+              [title]="build().name"
+              (click)="startEditing()"
+              role="button"
+              tabindex="0"
+              (keydown.enter)="startEditing()"
+              aria-label="Rename build: {{ build().name }}"
+            >{{ build().name }}</p>
+          }
           <p class="text-xs text-muted-foreground truncate">
             {{ build().champion ? build().champion!.name + ' · Lvl ' + build().level : 'No champion' }}
           </p>
@@ -45,7 +66,7 @@ import type { SavedBuild } from '../../models/build.model';
       </div>
 
       <!-- Items -->
-      <div class="flex gap-1 flex-wrap" aria-label="Items">
+      <div class="grid grid-cols-6 gap-1" aria-label="Items">
         @for (item of build().items; track $index) {
           @if (item) {
             <ng-template #itemTooltip>
@@ -72,7 +93,7 @@ import type { SavedBuild } from '../../models/build.model';
               </z-popover>
             </ng-template>
             <div
-              class="w-7 h-7 rounded border bg-muted/40 overflow-hidden cursor-default"
+              class="w-full aspect-square rounded border bg-muted/40 overflow-hidden cursor-default"
               [attr.aria-label]="item.name"
               zPopover
               [zContent]="itemTooltip"
@@ -82,18 +103,24 @@ import type { SavedBuild } from '../../models/build.model';
               <img
                 [src]="ddragon.getItemImageUrl(item.id)"
                 [alt]="item.name"
-                width="28"
-                height="28"
+                width="56"
+                height="56"
                 class="w-full h-full object-cover"
               />
             </div>
           } @else {
             <div
-              class="w-7 h-7 rounded border bg-muted/40 overflow-hidden flex items-center justify-center"
+              class="w-full aspect-square rounded border bg-muted/40"
               aria-label="Empty slot"
             ></div>
           }
         }
+      </div>
+
+      <!-- Total gold -->
+      <div class="flex items-center gap-1 text-xs text-yellow-500">
+        <i z-icon zType="circle-dollar-sign" class="w-3.5 h-3.5"></i>
+        <span>{{ build().totalGold.toLocaleString() }} gold</span>
       </div>
 
       <!-- Actions -->
@@ -137,11 +164,27 @@ export class SavedBuildItemComponent {
   protected readonly manager = inject(BuildsManagerService);
   protected readonly ddragon = inject(DdragonService);
   private readonly sanitizer = inject(DomSanitizer);
+  private readonly el = inject(ElementRef);
 
   readonly build = input.required<SavedBuild>();
 
-  protected getItemDescription(item: Item): SafeHtml {
-    return this.sanitizer.bypassSecurityTrustHtml(formatItemDescription(item.description));
+  protected readonly isEditing = signal(false);
+  protected readonly editingName = signal('');
+
+  protected startEditing(): void {
+    this.editingName.set(this.build().name);
+    this.isEditing.set(true);
+    setTimeout(() => {
+      this.el.nativeElement.querySelector('input')?.focus();
+    });
   }
 
+  protected saveName(): void {
+    this.manager.renameBuild(this.build().id, this.editingName());
+    this.isEditing.set(false);
+  }
+
+  protected getItemDescription(item: Item): SafeHtml {
+    return this.sanitizer.bypassSecurityTrustHtml(formatItemDescription(item.description, item));
+  }
 }

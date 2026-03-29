@@ -31,7 +31,7 @@ export function parseEffectRatios(effects: string): ParsedEffectRatio[] {
       stat = 'baseAD';
     } else if (desc.includes('bonus') && (desc.includes(' ad') || desc.includes('attack damage'))) {
       stat = 'bonusAD';
-    } else if (desc.includes(' ap') || desc.includes('ability power')) {
+    } else if (desc === 'ap' || desc.includes(' ap') || desc.includes('ability power')) {
       stat = 'AP';
     } else if (desc.includes('armor') && !desc.includes('penetration')) {
       stat = 'armor';
@@ -111,14 +111,13 @@ export function buildActiveEffects(
   actives: { name: string; effects: string; cooldown: number | null; range?: number | null }[],
 ): ItemActiveEffect[] {
   return actives
-    .filter(a => hasScalingRatio(a.effects))
+    .filter(a => a.effects?.trim())
     .map(a => ({
       name: a.name,
       effects: a.effects,
       cooldown: a.cooldown,
       ratios: parseEffectRatios(a.effects),
-    }))
-    .filter(a => a.ratios.length > 0);
+    }));
 }
 
 export function buildPassiveEffects(
