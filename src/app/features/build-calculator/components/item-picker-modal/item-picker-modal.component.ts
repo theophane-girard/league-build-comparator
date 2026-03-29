@@ -33,7 +33,6 @@ interface RoleFilter {
   id: string;
   label: string;
   icon: ZardIcon;
-  tags: string[];
 }
 
 interface MapType {
@@ -61,12 +60,12 @@ const ITEM_CATEGORIES: ItemCategory[] = [
 ];
 
 const ROLE_FILTERS: RoleFilter[] = [
-  { id: 'marksman',  label: 'Marksman',  icon: 'crosshair',   tags: ['CriticalStrike', 'AttackSpeed', 'LifeSteal'] },
-  { id: 'fighter',   label: 'Fighter',   icon: 'swords',      tags: ['ArmorPenetration', 'OnHit', 'Health'] },
-  { id: 'assassin',  label: 'Assassin',  icon: 'zap',         tags: ['ArmorPenetration', 'NonbootsMovement'] },
-  { id: 'mage',      label: 'Mage',      icon: 'sparkles',    tags: ['SpellDamage', 'MagicPenetration'] },
-  { id: 'support',   label: 'Support',   icon: 'heart',       tags: ['Aura', 'GoldPer', 'ManaRegen'] },
-  { id: 'tank',      label: 'Tank',      icon: 'shield',      tags: ['Armor', 'SpellBlock', 'Tenacity'] },
+  { id: 'MARKSMAN', label: 'Marksman', icon: 'crosshair' },
+  { id: 'FIGHTER',  label: 'Fighter',  icon: 'swords'    },
+  { id: 'ASSASSIN', label: 'Assassin', icon: 'zap'       },
+  { id: 'MAGE',     label: 'Mage',     icon: 'sparkles'  },
+  { id: 'SUPPORT',  label: 'Support',  icon: 'heart'     },
+  { id: 'TANK',     label: 'Tank',     icon: 'shield'    },
 ];
 
 const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
@@ -181,8 +180,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     }
     const roleId = this.activeRoleFilter();
     if (roleId) {
-      const roleTags = ROLE_FILTERS.find((r) => r.id === roleId)?.tags ?? [];
-      items = items.filter((i) => i.tags.some((t) => roleTags.includes(t)));
+      items = items.filter((i) => i.roleTags?.includes(roleId));
     }
     return items;
   });

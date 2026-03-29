@@ -48,7 +48,7 @@ interface RoleFilter {
       </div>
 
       <!-- Role filter row -->
-      <div class="px-3 py-2 border-b border-border flex items-center gap-1" role="group" aria-label="Role filters">
+      <div class="px-3 py-2 border-b border-border flex items-center gap-1 overflow-x-auto" role="group" aria-label="Role filters">
         <button
           type="button"
           class="cursor-pointer flex items-center justify-center w-8 h-8 rounded-md text-sm transition-colors shrink-0

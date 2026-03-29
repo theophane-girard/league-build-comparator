@@ -78,6 +78,8 @@ export interface Item {
   image: ItemImage;
   gold: ItemGold;
   tags: string[];
+  /** Meraki shop role tags e.g. MAGE, TANK, MARKSMAN — present after Meraki data is loaded */
+  roleTags?: string[];
   stats: ItemStats;
   depth?: number;
   from?: string[];

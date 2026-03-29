@@ -318,6 +318,7 @@ export class DdragonService {
           base.conditionalBonus = profiles.includes('conditional')
             ? computeConditionalBonus(passives)
             : undefined;
+          base.roleTags = meraki.shop?.tags ?? [];
         }
       }
 
