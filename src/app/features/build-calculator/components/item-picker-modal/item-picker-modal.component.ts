@@ -180,7 +180,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     }
     const roleId = this.activeRoleFilter();
     if (roleId) {
-      items = items.filter((i) => i.roleTags?.includes(roleId));
+      items = items.filter((i) => i.roleTags?.includes(roleId) && !i.into?.length);
     }
     return items;
   });
