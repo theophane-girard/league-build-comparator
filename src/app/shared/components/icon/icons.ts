@@ -36,6 +36,7 @@ import {
   Droplets,
   Ellipsis,
   Eye,
+  Fan,
   File,
   FileText,
   Folder,
@@ -96,6 +97,7 @@ import {
   User,
   UserPlus,
   Users,
+  Wand,
   X,
   Zap,
 } from 'lucide-angular';
@@ -208,6 +210,8 @@ export const ZARD_ICONS = {
   footprints: Footprints,
   target: Target,
   droplets: Droplets,
+  wand: Wand,
+  fan: Fan,
 } as const satisfies Record<string, LucideIconData>;
 
 export declare type ZardIcon = keyof typeof ZARD_ICONS | LucideIconData;

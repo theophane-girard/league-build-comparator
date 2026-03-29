@@ -60,12 +60,12 @@ const ITEM_CATEGORIES: ItemCategory[] = [
 ];
 
 const ROLE_FILTERS: RoleFilter[] = [
-  { id: 'MARKSMAN', label: 'Marksman', icon: 'crosshair' },
   { id: 'FIGHTER',  label: 'Fighter',  icon: 'swords'    },
-  { id: 'ASSASSIN', label: 'Assassin', icon: 'zap'       },
-  { id: 'MAGE',     label: 'Mage',     icon: 'sparkles'  },
-  { id: 'SUPPORT',  label: 'Support',  icon: 'heart'     },
+  { id: 'MARKSMAN', label: 'Marksman', icon: 'crosshair' },
+  { id: 'ASSASSIN', label: 'Assassin', icon: 'fan'       },
+  { id: 'MAGE',     label: 'Mage',     icon: 'wand'  },
   { id: 'TANK',     label: 'Tank',     icon: 'shield'    },
+  { id: 'SUPPORT',  label: 'Support',  icon: 'heart'     },
 ];
 
 const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {

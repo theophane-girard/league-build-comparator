@@ -75,7 +75,6 @@ interface RoleFilter {
             (click)="toggleRoleFilter(role.id)"
           >
             <i z-icon [zType]="role.icon" class="w-3.5 h-3.5 shrink-0"></i>
-            <span>{{ role.label }}</span>
           </button>
         }
       </div>
