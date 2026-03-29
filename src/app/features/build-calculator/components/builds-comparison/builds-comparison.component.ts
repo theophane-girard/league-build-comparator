@@ -87,7 +87,7 @@ export class BuildsComparisonComponent {
 
   protected readonly filteredStatDefs = computed(() => {
     const keys = this.selectedStatKeys();
-    return keys.length ? STAT_DEFS.filter(d => keys.includes(d.key)) : STAT_DEFS;
+    return STAT_DEFS.filter(d => keys.includes(d.key));
   });
 
   protected readonly rowData = computed((): ComparisonRow[] => {

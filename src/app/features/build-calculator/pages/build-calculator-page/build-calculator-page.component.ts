@@ -50,6 +50,7 @@ import type { Item } from '../../models/item.model';
             <h2 class="text-lg font-semibold shrink-0">Stats Comparison</h2>
             <z-select
               [zMultiple]="true"
+              [zSelectAll]="true"
               [zValue]="selectedStatKeys()"
               zPlaceholder="Filter stats..."
               aria-label="Filter stats to display"
