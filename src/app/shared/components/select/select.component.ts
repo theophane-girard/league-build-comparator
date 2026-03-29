@@ -36,6 +36,8 @@ import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardSelectItemComponent } from '@/shared/components/select/select-item.component';
 import {
   selectContentVariants,
+  selectItemIconVariants,
+  selectItemVariants,
   selectTriggerVariants,
   selectVariants,
   type ZardSelectSizeVariants,
@@ -90,6 +92,24 @@ const COMPACT_MODE_WIDTH_THRESHOLD = 100;
         tabindex="-1"
       >
         <div class="p-1">
+          @if (zMultiple() && zSelectAll()) {
+            <button
+              type="button"
+              role="option"
+              tabindex="-1"
+              [class]="selectAllItemClasses()"
+              [attr.aria-selected]="allSelected()"
+              (click)="toggleSelectAll()"
+            >
+              @if (allSelected() || someSelected()) {
+                <span [class]="selectAllIconClasses()">
+                  <z-icon [zType]="allSelected() ? 'check' : 'minus'" aria-hidden="true" />
+                </span>
+              }
+              <span class="truncate">{{ allSelected() ? 'Deselect all' : 'Select all' }}</span>
+            </button>
+            <div class="mb-1 border-t border-border"></div>
+          }
           <ng-content />
         </div>
       </div>
@@ -132,6 +152,7 @@ export class ZardSelectComponent implements ControlValueAccessor, AfterContentIn
   readonly zMaxLabelCount = input<number>(1);
   readonly zMultiple = input<boolean>(false);
   readonly zPlaceholder = input<string>('Select an option...');
+  readonly zSelectAll = input(false, { transform: booleanAttribute });
   readonly zSize = input<ZardSelectSizeVariants>('default');
   readonly zValue = model<string | string[]>(this.zMultiple() ? [] : '');
 
@@ -165,6 +186,44 @@ export class ZardSelectComponent implements ControlValueAccessor, AfterContentIn
   private onTouched: OnTouchedType = () => {
     // ControlValueAccessor onTouched callback
   };
+
+  protected readonly allSelectableValues = computed(() =>
+    this.selectItems()
+      .filter(item => !item.zDisabled())
+      .map(item => item.zValue()),
+  );
+
+  protected readonly allSelected = computed(() => {
+    const selectable = this.allSelectableValues();
+    if (!selectable.length) return false;
+    const selected = this.zValue() as string[];
+    return selectable.every(v => selected.includes(v));
+  });
+
+  protected readonly someSelected = computed(() => {
+    const selectable = this.allSelectableValues();
+    const selected = this.zValue() as string[];
+    return !this.allSelected() && selectable.some(v => selected.includes(v));
+  });
+
+  protected readonly selectAllItemClasses = computed(() =>
+    mergeClasses(selectItemVariants({ zMode: 'normal', zSize: this.zSize() })),
+  );
+
+  protected readonly selectAllIconClasses = computed(() =>
+    mergeClasses(selectItemIconVariants({ zMode: 'normal', zSize: this.zSize() })),
+  );
+
+  toggleSelectAll(): void {
+    if (this.allSelected()) {
+      this.zValue.set([]);
+    } else {
+      this.zValue.set(this.allSelectableValues());
+    }
+    this.onChange(this.zValue() as unknown as string);
+    this.zSelectionChange.emit(this.zValue());
+    this.updateOverlayPosition();
+  }
 
   protected readonly classes = computed(() => mergeClasses(selectVariants(), this.class()));
   protected readonly contentClasses = computed(() => mergeClasses(selectContentVariants()));
