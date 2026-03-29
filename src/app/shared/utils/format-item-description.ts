@@ -12,6 +12,51 @@ const RATIO_STAT_COLORS: Record<ParsedEffectRatio['stat'], string> = {
   maxHP:       '#71c56d',
 };
 
+// Ordered from most-specific to least-specific to avoid wrong matches
+const STAT_LINE_COLORS: Array<[RegExp, string]> = [
+  [/ability power/i,                  '#9e6fce'],  // AP — purple
+  [/attack damage/i,                  '#c86c37'],  // AD — orange
+  [/health regen/i,                   '#71c56d'],  // HP regen — green
+  [/mana regen/i,                     '#4a9eff'],  // Mana regen — blue
+  [/health|max hp/i,                  '#71c56d'],  // HP — green
+  [/mana|max mp/i,                    '#4a9eff'],  // Mana — blue
+  [/armor/i,                          '#c89b3c'],  // Armor — gold
+  [/magic resist/i,                   '#7ec4e4'],  // MR — light blue
+  [/attack speed/i,                   '#f0e68c'],  // Attack Speed — light yellow
+  [/movement speed/i,                 '#71c56d'],  // Move Speed — green
+  [/crit(?:ical)?(?:\s+(?:chance|strike))?/i, '#f4d03f'], // Crit — yellow
+  [/omnivamp|life steal/i,            '#ff6161'],  // Lifesteal/Omnivamp — red
+  [/ability haste/i,                  '#87ceeb'],  // AH — sky blue
+  [/lethality|armor pen(?:etration)?/i, '#c86c37'], // Lethality — orange
+  [/magic pen(?:etration)?/i,         '#9e6fce'],  // Magic pen — purple
+];
+
+function getStatColor(statName: string): string {
+  for (const [pattern, color] of STAT_LINE_COLORS) {
+    if (pattern.test(statName)) return color;
+  }
+  return '#c89b3c';
+}
+
+function colorizeStatLine(line: string): string {
+  const nameMatch = line.match(/<\/attention>\s*([\s\S]*?)$/i);
+  const statName = nameMatch ? nameMatch[1].trim() : line;
+  const color = getStatColor(statName);
+  const processedLine = line
+    .replace(/<attention>([\s\S]*?)<\/attention>/gi,
+      `<span style="color:${color};font-weight:700">$1</span>`)
+    .replace(/<\/?attention>/gi, '');
+  return `<span style="color:${color}">${processedLine}</span>`;
+}
+
+function colorizeStatsSection(raw: string): string {
+  return raw
+    .split(/<br\s*\/?>/i)
+    .filter(l => l.trim())
+    .map(colorizeStatLine)
+    .join('<br>');
+}
+
 function statColor(rawDesc: string): string {
   const desc = rawDesc
     .replace(/'{3}/g, '')
@@ -113,7 +158,7 @@ export function formatItemDescription(raw: string, item?: Item): string {
   const base = rawToProcess
     .replace(/<\/?mainText>/g, '')
     .replace(/<stats>([\s\S]*?)<\/stats>/g,
-      '<div style="margin-bottom:.5rem">$1</div>')
+      (_, content) => `<div style="margin-bottom:.5rem">${colorizeStatsSection(content)}</div>`)
     .replace(/<attention>([\s\S]*?)<\/attention>/g,
       '<span style="color:#c89b3c;font-weight:700">$1</span>')
     .replace(/<passive>([\s\S]*?)<\/passive>/g,
@@ -149,7 +194,9 @@ export function formatItemDescription(raw: string, item?: Item): string {
     .replace(/<\/?(br)[^>]*>/gi, '<br>')
     .replace(/<\/?([a-zA-Z][a-zA-Z0-9]*)[^>]*>/g, (match, tag) =>
       STANDARD_TAGS.test(tag) ? match : ''
-    );
+    )
+    // Collapse 2+ consecutive <br> (with optional whitespace between) into one
+    .replace(/(<br\s*\/?>(\s|&nbsp;)*){2,}/gi, '<br>');
 
   const effectsSection = item ? buildEffectsSection(item) : '';
   const trimmedBase = effectsSection ? base.replace(/(<br\s*\/?>|\s)+$/gi, '') : base;
