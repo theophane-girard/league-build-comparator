@@ -16,6 +16,12 @@ interface ItemCategory {
   icon: ZardIcon;
 }
 
+interface RoleFilter {
+  id: string;
+  label: string;
+  icon: ZardIcon;
+}
+
 @Component({
   selector: 'app-item-picker-sidebar',
   imports: [ZardIconComponent, ZardInputDirective, ZardInputGroupComponent, ZardPopoverDirective, ZardPopoverComponent],
@@ -39,6 +45,39 @@ interface ItemCategory {
             />
           </z-input-group>
         </div>
+      </div>
+
+      <!-- Role filter row -->
+      <div class="px-3 py-2 border-b border-border flex items-center gap-1" role="group" aria-label="Role filters">
+        <button
+          type="button"
+          class="cursor-pointer flex items-center justify-center w-8 h-8 rounded-md text-sm transition-colors shrink-0
+                 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          [class]="activeRoleFilter() === null
+            ? 'bg-primary text-primary-foreground'
+            : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+          [attr.aria-pressed]="activeRoleFilter() === null"
+          aria-label="All roles (reset role filter)"
+          (click)="clearRoleFilter()"
+        >
+          <i z-icon zType="layout-dashboard" class="w-4 h-4 shrink-0"></i>
+        </button>
+        @for (role of roleFilters(); track role.id) {
+          <button
+            type="button"
+            class="cursor-pointer flex items-center gap-1.5 px-2.5 h-8 rounded-md text-xs transition-colors
+                   focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            [class]="activeRoleFilter() === role.id
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+            [attr.aria-pressed]="activeRoleFilter() === role.id"
+            [attr.aria-label]="role.label + ' role filter'"
+            (click)="toggleRoleFilter(role.id)"
+          >
+            <i z-icon [zType]="role.icon" class="w-3.5 h-3.5 shrink-0"></i>
+            <span>{{ role.label }}</span>
+          </button>
+        }
       </div>
 
       <section class="flex flex-1 min-h-0" aria-label="Item list and filters">
@@ -145,14 +184,25 @@ export class ItemPickerSidebarComponent {
   readonly searchText = input.required<string>();
   readonly categories = input.required<ItemCategory[]>();
   readonly activeFilters = input.required<Set<string>>();
+  readonly roleFilters = input.required<RoleFilter[]>();
+  readonly activeRoleFilter = input<string | null>(null);
 
   readonly searchChange = output<string>();
   readonly filterToggle = output<string>();
   readonly filterClear = output<void>();
+  readonly roleFilterChange = output<string | null>();
   readonly itemSelect = output<Item>();
 
   protected onSearchInput(event: Event): void {
     this.searchChange.emit((event.target as HTMLInputElement).value);
+  }
+
+  protected clearRoleFilter(): void {
+    this.roleFilterChange.emit(null);
+  }
+
+  protected toggleRoleFilter(id: string): void {
+    this.roleFilterChange.emit(id);
   }
 
   protected getItemDescription(item: Item): SafeHtml {

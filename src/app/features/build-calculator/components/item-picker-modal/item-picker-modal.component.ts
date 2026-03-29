@@ -29,6 +29,13 @@ interface ItemCategory {
   tags: string[];
 }
 
+interface RoleFilter {
+  id: string;
+  label: string;
+  icon: ZardIcon;
+  tags: string[];
+}
+
 interface MapType {
   id: string;
   label: string;
@@ -51,6 +58,15 @@ const ITEM_CATEGORIES: ItemCategory[] = [
   { id: 'lifesteal', label: 'Life Steal', icon: 'heart', tags: ['LifeSteal'] },
   { id: 'boots', label: 'Boots', icon: 'footprints', tags: ['Boots'] },
   { id: 'ability-haste', label: 'Ability Haste', icon: 'hourglass', tags: ['CooldownReduction'] },
+];
+
+const ROLE_FILTERS: RoleFilter[] = [
+  { id: 'marksman',  label: 'Marksman',  icon: 'crosshair',   tags: ['CriticalStrike', 'AttackSpeed', 'LifeSteal'] },
+  { id: 'fighter',   label: 'Fighter',   icon: 'swords',      tags: ['ArmorPenetration', 'OnHit', 'Health'] },
+  { id: 'assassin',  label: 'Assassin',  icon: 'zap',         tags: ['ArmorPenetration', 'NonbootsMovement'] },
+  { id: 'mage',      label: 'Mage',      icon: 'sparkles',    tags: ['SpellDamage', 'MagicPenetration'] },
+  { id: 'support',   label: 'Support',   icon: 'heart',       tags: ['Aura', 'GoldPer', 'ManaRegen'] },
+  { id: 'tank',      label: 'Tank',      icon: 'shield',      tags: ['Armor', 'SpellBlock', 'Tenacity'] },
 ];
 
 const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
@@ -101,9 +117,12 @@ const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
           [searchText]="searchText()"
           [categories]="categories"
           [activeFilters]="activeFilters()"
+          [roleFilters]="roleFilters"
+          [activeRoleFilter]="activeRoleFilter()"
           (searchChange)="searchText.set($event)"
           (filterToggle)="toggleFilter($event)"
           (filterClear)="clearFilters()"
+          (roleFilterChange)="setRoleFilter($event)"
           (itemSelect)="selectItemFromList($event)"
         />
 
@@ -134,6 +153,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
   readonly buildSaved = output<(Item | null)[]>();
 
   protected readonly categories = ITEM_CATEGORIES;
+  protected readonly roleFilters = ROLE_FILTERS;
   protected readonly mapTypes = MAP_TYPES;
 
   protected readonly activeSlotIndex = signal(0);
@@ -141,6 +161,7 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
   protected readonly previewedItem = signal<Item | null>(null);
   protected readonly searchText = signal('');
   protected readonly activeFilters = signal<Set<string>>(new Set());
+  protected readonly activeRoleFilter = signal<string | null>(null);
   protected readonly selectedMapId = signal('11');
 
   protected readonly filteredItems = computed(() => {
@@ -157,6 +178,11 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
         .filter((c) => filters.has(c.id))
         .flatMap((c) => c.tags);
       items = items.filter((i) => i.tags.some((t) => activeTags.includes(t)));
+    }
+    const roleId = this.activeRoleFilter();
+    if (roleId) {
+      const roleTags = ROLE_FILTERS.find((r) => r.id === roleId)?.tags ?? [];
+      items = items.filter((i) => i.tags.some((t) => roleTags.includes(t)));
     }
     return items;
   });
@@ -240,6 +266,10 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
 
   protected clearFilters(): void {
     this.activeFilters.set(new Set());
+  }
+
+  protected setRoleFilter(id: string | null): void {
+    this.activeRoleFilter.update(current => current === id ? null : id);
   }
 
   protected setMapFilter(mapId: string): void {

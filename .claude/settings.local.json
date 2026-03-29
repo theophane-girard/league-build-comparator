@@ -28,7 +28,8 @@
       "Bash(find /c/Users/Théophane/Documents/zard-test/src -path *item* -name *.component.ts -type f)",
       "mcp__chrome-devtools__wait_for",
       "mcp__chrome-devtools__fill",
-      "mcp__chrome-devtools__hover"
+      "mcp__chrome-devtools__hover",
+      "Bash(npx ng:*)"
     ]
   }
 }
