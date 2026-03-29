@@ -343,6 +343,7 @@ export class DdragonService {
         );
       })
       .map(mapEntry);
+
     this.items.set(list);
     this.itemsLoaded = true;
   }

@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@a
 import { ZardComboboxComponent, type ZardComboboxOption } from '@/shared/components/combobox';
 import { BuildCalculatorService } from '@/shared/services/build-calculator.service';
 import { DdragonService } from '@/shared/services/ddragon.service';
+import type { Item } from '../../models/item.model';
 
 @Component({
   selector: 'app-item-search',
@@ -23,9 +24,14 @@ export class ItemSearchComponent implements OnInit {
   protected readonly build = inject(BuildCalculatorService);
   private readonly ddragon = inject(DdragonService);
 
-  protected readonly options = computed((): ZardComboboxOption[] =>
-    this.ddragon.items().map(i => ({ value: i.id, label: i.name })),
-  );
+  protected readonly options = computed((): ZardComboboxOption[] => {
+    const seen = new Map<string, Item>();
+    for (const item of this.ddragon.items()) {
+      const existing = seen.get(item.name);
+      if (!existing || Number(item.id) > Number(existing.id)) seen.set(item.name, item);
+    }
+    return [...seen.values()].map(i => ({ value: i.id, label: i.name }));
+  });
 
   async ngOnInit(): Promise<void> {
     await this.ddragon.loadItems();

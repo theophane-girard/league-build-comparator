@@ -83,6 +83,18 @@ const STAT_LABELS: Record<string, { name: string; percent?: boolean }> = {
   PercentMovementSpeedMod: { name: 'Move Speed', percent: true },
 };
 
+/** Among items with the same name, keep the one with the highest numeric ID (most map-specific/recent version). */
+function dedupeByName(items: Item[]): Item[] {
+  const seen = new Map<string, Item>();
+  for (const item of items) {
+    const existing = seen.get(item.name);
+    if (!existing || Number(item.id) > Number(existing.id)) {
+      seen.set(item.name, item);
+    }
+  }
+  return [...seen.values()];
+}
+
 @Component({
   selector: 'app-item-picker-modal',
   imports: [CdkTrapFocus, ItemPickerHeaderComponent, ItemPickerSidebarComponent, ItemDetailPanelComponent],
@@ -165,7 +177,8 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
 
   protected readonly filteredItems = computed(() => {
     const mapId = this.selectedMapId();
-    let items = this.ddragon.items().filter((i) => i.maps?.[mapId] === true);
+    // Filter by map then deduplicate by name, keeping highest ID (most map-specific version)
+    let items = dedupeByName(this.ddragon.items().filter((i) => i.maps?.[mapId] === true));
 
     const search = this.searchText().toLowerCase().trim();
     if (search) {
@@ -189,14 +202,18 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
     const item = this.previewedItem();
     if (!item?.from?.length) return [];
     const byId = this.ddragon.rawItemsById();
-    return item.from.map((id) => byId.get(id)).filter((i): i is Item => i !== undefined);
+    const mapId = this.selectedMapId();
+    const resolved = item.from.map((id) => byId.get(id)).filter((i): i is Item => i !== undefined && (i.maps?.[mapId] === true));
+    return dedupeByName(resolved);
   });
 
   protected readonly parentSuggestions = computed((): Item[] => {
     const item = this.previewedItem();
     if (!item?.into?.length) return [];
     const byId = this.ddragon.rawItemsById();
-    return item.into.map((id) => byId.get(id)).filter((i): i is Item => i !== undefined);
+    const mapId = this.selectedMapId();
+    const resolved = item.into.map((id) => byId.get(id)).filter((i): i is Item => i !== undefined && (i.maps?.[mapId] === true));
+    return dedupeByName(resolved);
   });
 
   protected readonly previewedStats = computed((): string[] => {
