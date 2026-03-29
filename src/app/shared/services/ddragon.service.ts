@@ -330,13 +330,18 @@ export class DdragonService {
     this.rawItemsById.set(rawById);
 
     const list: Item[] = Object.entries(ddragonData.data)
-      .filter(([, item]) =>
-        item.gold.purchasable &&
-        item.gold.total > 0 &&
-        (item.depth === undefined || item.depth >= 2) &&
-        item.tags?.length > 0 &&
-        Object.keys(item.stats).length > 0
-      )
+      .filter(([id, item]) => {
+        const meraki = merakiItems?.[id];
+        if (meraki?.rank?.includes('DISTRIBUTED')) return false;
+        if (meraki?.tier === 4) return true; // transformation items (e.g. Seraph's Embrace, Muramana)
+        return (
+          item.gold.purchasable &&
+          item.gold.total > 0 &&
+          (item.depth === undefined || item.depth >= 2) &&
+          item.tags?.length > 0 &&
+          Object.keys(item.stats).length > 0
+        );
+      })
       .map(mapEntry);
     this.items.set(list);
     this.itemsLoaded = true;
