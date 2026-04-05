@@ -185,15 +185,22 @@ export class ItemPickerModalComponent implements OnInit, OnDestroy {
       items = items.filter((i) => i.name.toLowerCase().includes(search));
     }
     const filters = this.activeFilters();
-    if (filters.size > 0) {
-      const activeTags = ITEM_CATEGORIES
-        .filter((c) => filters.has(c.id))
-        .flatMap((c) => c.tags);
-      items = items.filter((i) => i.tags.some((t) => activeTags.includes(t)));
+    const hasCategoryFilter = filters.size > 0;
+    if (hasCategoryFilter) {
+      const activeCategories = ITEM_CATEGORIES.filter((c) => filters.has(c.id));
+      items = items.filter((i) =>
+        activeCategories.every((c) => c.tags.some((t) => i.tags.includes(t)))
+      );
     }
     const roleId = this.activeRoleFilter();
     if (roleId) {
-      items = items.filter((i) => i.roleTags?.includes(roleId) && !i.into?.length);
+      if (hasCategoryFilter) {
+        // Combined: strict on role tag, but allow component items (category already narrows the list).
+        items = items.filter((i) => i.roleTags?.includes(roleId));
+      } else {
+        // Role filter alone: completed items only (no components).
+        items = items.filter((i) => i.roleTags?.includes(roleId) && !i.into?.length);
+      }
     }
     return items;
   });

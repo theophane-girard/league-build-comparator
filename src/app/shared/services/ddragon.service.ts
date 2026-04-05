@@ -92,7 +92,7 @@ interface MerakiChampionData {
 }
 
 const MERAKI_BASE_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions';
-const MERAKI_ITEMS_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/items.json';
+const MERAKI_ITEMS_URL = '/meraki-items.json';
 
 // ---------------------------------------------------------------------------
 // DDragon item raw types

@@ -8,12 +8,12 @@
     },
     "logLevel": "info"
   },
-  "/meraki-items": {
+  "/meraki-items.json": {
     "target": "https://cdn.merakianalytics.com",
     "secure": true,
     "changeOrigin": true,
     "pathRewrite": {
-      "^/meraki-items": "/riot/lol/resources/latest/en-US/items.json"
+      "^/meraki-items\\.json": "/riot/lol/resources/latest/en-US/items.json"
     },
     "logLevel": "info"
   }
