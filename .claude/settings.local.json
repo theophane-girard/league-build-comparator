@@ -29,7 +29,8 @@
       "mcp__chrome-devtools__wait_for",
       "mcp__chrome-devtools__fill",
       "mcp__chrome-devtools__hover",
-      "Bash(npx ng:*)"
+      "Bash(npx ng:*)",
+      "mcp__chrome-devtools__new_page"
     ]
   }
 }

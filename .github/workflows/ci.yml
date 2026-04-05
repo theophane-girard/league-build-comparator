@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '0 */6 * * *'  # Every 6 hours — detects new patches within hours of release
 
 jobs:
   build-test-deploy:
@@ -14,26 +16,54 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Get latest LoL patch version
+        id: patch
+        run: |
+          VERSION=$(curl -sf https://ddragon.leagueoflegends.com/api/versions.json | jq -r '.[0]')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Latest patch: $VERSION"
+
+      # Cache key includes the patch version — cache miss means a new patch dropped
+      - name: Check patch cache
+        id: cache
+        uses: actions/cache@v4
+        with:
+          path: .patch-cache
+          key: patch-${{ steps.patch.outputs.version }}
+
       - name: Setup Node.js
+        if: steps.cache.outputs.cache-hit != 'true' || github.event_name != 'schedule'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
+        if: steps.cache.outputs.cache-hit != 'true' || github.event_name != 'schedule'
         run: npm ci
 
+      - name: Fetch latest Meraki data (items + champions)
+        if: steps.cache.outputs.cache-hit != 'true' || github.event_name != 'schedule'
+        run: node scripts/fetch-meraki-data.mjs
+
       - name: Build
+        if: steps.cache.outputs.cache-hit != 'true' || github.event_name != 'schedule'
         run: npm run build
 
       - name: Test
+        if: steps.cache.outputs.cache-hit != 'true' || github.event_name != 'schedule'
         run: npm test -- --watch=false
 
       - name: Deploy to Firebase Hosting
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        if: (steps.cache.outputs.cache-hit != 'true' || github.event_name != 'schedule') && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'schedule')
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_LOL_BUILD_8B2B4 }}
           projectId: lol-build-8b2b4
           channelId: live
+
+      # Mark this patch version as deployed so future scheduled runs skip it
+      - name: Mark patch as deployed
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: mkdir -p .patch-cache && echo "${{ steps.patch.outputs.version }}" > .patch-cache/version

@@ -7,6 +7,7 @@ const ROOT = join(__dirname, '..');
 const PUBLIC = join(ROOT, 'public');
 
 const ITEMS_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/items.json';
+const CHAMPIONS_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions.json';
 
 async function fetchJson(url) {
   const res = await fetch(url);
@@ -15,12 +16,19 @@ async function fetchJson(url) {
 }
 
 async function main() {
-  console.log('[fetch-meraki] Downloading Meraki items data...');
+  console.log('[fetch-meraki] Downloading Meraki data...');
   mkdirSync(PUBLIC, { recursive: true });
 
-  const items = await fetchJson(ITEMS_URL);
+  const [items, champions] = await Promise.all([
+    fetchJson(ITEMS_URL),
+    fetchJson(CHAMPIONS_URL),
+  ]);
+
   writeFileSync(join(PUBLIC, 'meraki-items.json'), JSON.stringify(items));
   console.log(`[fetch-meraki] Saved ${Object.keys(items).length} items to public/meraki-items.json`);
+
+  writeFileSync(join(PUBLIC, 'meraki-champions.json'), JSON.stringify(champions));
+  console.log(`[fetch-meraki] Saved ${Object.keys(champions).length} champions to public/meraki-champions.json`);
 }
 
 main().catch((err) => {

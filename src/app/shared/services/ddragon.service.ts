@@ -91,7 +91,7 @@ interface MerakiChampionData {
   passive: { name: string; description: string };
 }
 
-const MERAKI_BASE_URL = 'https://cdn.merakianalytics.com/riot/lol/resources/latest/en-US/champions';
+const MERAKI_CHAMPIONS_URL = '/meraki-champions.json';
 const MERAKI_ITEMS_URL = '/meraki-items.json';
 
 // ---------------------------------------------------------------------------
@@ -173,6 +173,8 @@ export class DdragonService {
   private versionLoaded = false;
   private championsLoaded = false;
   private itemsLoaded = false;
+  private merakiChampionsCache: Record<string, MerakiChampionData> | null = null;
+  private merakiChampionsLoading: Promise<Record<string, MerakiChampionData> | null> | null = null;
 
   async loadVersion(): Promise<string> {
     if (this.versionLoaded && this.version()) {
@@ -206,24 +208,35 @@ export class DdragonService {
     this.championsLoaded = true;
   }
 
+  private loadMerakiChampions(): Promise<Record<string, MerakiChampionData> | null> {
+    if (this.merakiChampionsCache !== null) return Promise.resolve(this.merakiChampionsCache);
+    if (this.merakiChampionsLoading) return this.merakiChampionsLoading;
+    this.merakiChampionsLoading = firstValueFrom(
+      this.http.get<Record<string, MerakiChampionData>>(MERAKI_CHAMPIONS_URL)
+    ).then(data => {
+      this.merakiChampionsCache = data;
+      return data;
+    }).catch((err: unknown) => {
+      console.error('[Meraki] Could not load champion data:', err);
+      return null;
+    });
+    return this.merakiChampionsLoading;
+  }
+
   async loadChampionDetail(id: string): Promise<ChampionDetail> {
     const cache = this.championDetailCache();
     if (cache.has(id)) return cache.get(id)!;
 
     const v = await this.loadVersion();
-    const [data, merakiData] = await Promise.all([
+    const [data, merakiChampions] = await Promise.all([
       firstValueFrom(
         this.http.get<{ data: Record<string, ChampionDetailRaw> }>(
           `${BASE_URL}/cdn/${v}/data/${this.locale()}/champion/${id}.json`
         )
       ),
-      firstValueFrom(
-        this.http.get<MerakiChampionData>(`${MERAKI_BASE_URL}/${id}.json`)
-      ).catch((err: unknown) => {
-        console.error(`[Meraki] Could not load spell data for "${id}":`, err);
-        return null;
-      }),
+      this.loadMerakiChampions(),
     ]);
+    const merakiData = merakiChampions?.[id] ?? null;
     const raw = data.data[id];
 
     const mapMerakiSpell = (s: MerakiSpell): ChampionSpell => ({
