@@ -6,6 +6,7 @@ import { ZardIconComponent } from '@/shared/components/icon';
 import { ZardPopoverDirective, ZardPopoverComponent } from '@/shared/components/popover';
 import { BuildsManagerService } from '@/shared/services/builds-manager.service';
 import { DdragonService } from '@/shared/services/ddragon.service';
+import { SpellLevelsService } from '@/shared/services/spell-levels.service';
 import { formatItemDescription } from '@/shared/utils/format-item-description';
 import { formatSpellDescription } from '@/shared/utils/format-spell-description';
 import { calculateBaseStats, combineStats, sumItemStats } from '@/shared/utils/stats-calculator';
@@ -299,6 +300,7 @@ const SPELL_MAX_RANKS = [5, 5, 5, 3] as const;
 export class SavedBuildItemComponent {
   protected readonly manager = inject(BuildsManagerService);
   protected readonly ddragon = inject(DdragonService);
+  private readonly spellLevelsSvc = inject(SpellLevelsService);
   private readonly sanitizer = inject(DomSanitizer);
   private readonly el = inject(ElementRef);
 
@@ -306,10 +308,14 @@ export class SavedBuildItemComponent {
 
   protected readonly isEditing = signal(false);
   protected readonly editingName = signal('');
-  protected readonly spellLevels = signal([1, 1, 1, 1]);
 
   protected readonly spellKeys = SPELL_KEYS;
   protected readonly spellMaxRanks = SPELL_MAX_RANKS;
+
+  protected readonly spellLevels = computed(() => {
+    const id = this.build().champion?.id;
+    return id ? this.spellLevelsSvc.getLevels(id) : ([1, 1, 1, 1] as const);
+  });
 
   protected readonly finalStats = computed((): FinalStats | null => {
     const b = this.build();
@@ -343,20 +349,13 @@ export class SavedBuildItemComponent {
   }
 
   protected increaseSpellLevel(index: number): void {
-    const max = SPELL_MAX_RANKS[index];
-    this.spellLevels.update(levels => {
-      const next = [...levels];
-      next[index] = Math.min(max, next[index] + 1);
-      return next;
-    });
+    const id = this.build().champion?.id;
+    if (id) this.spellLevelsSvc.increase(id, index);
   }
 
   protected decreaseSpellLevel(index: number): void {
-    this.spellLevels.update(levels => {
-      const next = [...levels];
-      next[index] = Math.max(1, next[index] - 1);
-      return next;
-    });
+    const id = this.build().champion?.id;
+    if (id) this.spellLevelsSvc.decrease(id, index);
   }
 
   protected getItemDescription(item: Item): SafeHtml {
