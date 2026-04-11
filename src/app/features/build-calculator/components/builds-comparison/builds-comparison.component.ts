@@ -17,11 +17,13 @@ interface ComparisonRow {
   [buildId: string]: number | string;
 }
 
-interface StatDef {
+export interface StatDef {
   key: string;
   label: string;
   format: StatFormat;
   getValue: (build: SavedBuild) => number;
+  /** Returns the champion baseline value for this stat (no items). Used to detect item contribution. */
+  getBaseValue?: (build: SavedBuild) => number;
 }
 
 export const STAT_DEFS: StatDef[] = [
@@ -35,10 +37,30 @@ export const STAT_DEFS: StatDef[] = [
   { key: 'critChance', label: 'Crit Chance', format: 'percent', getValue: b => b.finalStats?.critChance ?? 0 },
   { key: 'movementSpeed', label: 'Movement Speed', format: 'integer', getValue: b => b.finalStats?.movementSpeed ?? 0 },
   { key: 'attackRange', label: 'Attack Range', format: 'integer', getValue: b => b.finalStats?.attackRange ?? 0 },
-  { key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent', getValue: b => b.finalStats?.physicalDamageReduction ?? 0 },
-  { key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent', getValue: b => b.finalStats?.magicalDamageReduction ?? 0 },
-  { key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer', getValue: b => b.finalStats?.effectiveHpPhysical ?? 0 },
-  { key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer', getValue: b => b.finalStats?.effectiveHpMagical ?? 0 },
+  { key: 'lethality', label: 'Lethality', format: 'integer', getValue: b => b.finalStats?.lethality ?? 0 },
+  { key: 'armorPenPercent', label: 'Armor Pen %', format: 'percent', getValue: b => b.finalStats?.armorPenPercent ?? 0 },
+  { key: 'magicPenFlat', label: 'Magic Pen', format: 'integer', getValue: b => b.finalStats?.magicPenFlat ?? 0 },
+  { key: 'magicPenPercent', label: 'Magic Pen %', format: 'percent', getValue: b => b.finalStats?.magicPenPercent ?? 0 },
+  {
+    key: 'physicalDamageReduction', label: 'Phys. Dmg Reduction', format: 'percent',
+    getValue: b => b.finalStats?.physicalDamageReduction ?? 0,
+    getBaseValue: b => { const a = b.baseStats?.armor ?? 0; return (a / (100 + a)) * 100; },
+  },
+  {
+    key: 'magicalDamageReduction', label: 'Magic Dmg Reduction', format: 'percent',
+    getValue: b => b.finalStats?.magicalDamageReduction ?? 0,
+    getBaseValue: b => { const mr = b.baseStats?.magicResist ?? 0; return (mr / (100 + mr)) * 100; },
+  },
+  {
+    key: 'effectiveHpPhysical', label: 'Effective HP (Phys)', format: 'integer',
+    getValue: b => b.finalStats?.effectiveHpPhysical ?? 0,
+    getBaseValue: b => { const hp = b.baseStats?.hp ?? 0; const a = b.baseStats?.armor ?? 0; return hp * (100 + a) / 100; },
+  },
+  {
+    key: 'effectiveHpMagical', label: 'Effective HP (Magic)', format: 'integer',
+    getValue: b => b.finalStats?.effectiveHpMagical ?? 0,
+    getBaseValue: b => { const hp = b.baseStats?.hp ?? 0; const mr = b.baseStats?.magicResist ?? 0; return hp * (100 + mr) / 100; },
+  },
   { key: 'totalGold', label: 'Total Gold', format: 'integer', getValue: b => b.totalGold },
   { key: 'burst', label: 'Burst Damage', format: 'integer', getValue: b => b.damageStats?.burst ?? 0 },
   { key: 'dps', label: 'DPS', format: 'decimal', getValue: b => b.damageStats?.dps ?? 0 },

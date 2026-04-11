@@ -20,10 +20,18 @@ export interface ItemBonuses {
   movementSpeed: number;
   critChance: number;
   attackSpeedBonus: number;
+  lethality: number;
+  armorPenPercent: number;
+  magicPenFlat: number;
+  magicPenPercent: number;
 }
 
 export interface FinalStats extends BaseStats {
   abilityPower: number;
+  lethality: number;
+  armorPenPercent: number;
+  magicPenFlat: number;
+  magicPenPercent: number;
   /** Percentage of physical damage mitigated: armor / (100 + armor) × 100 */
   physicalDamageReduction: number;
   /** Percentage of magic damage mitigated: magicResist / (100 + magicResist) × 100 */

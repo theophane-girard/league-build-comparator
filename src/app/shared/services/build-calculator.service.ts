@@ -52,6 +52,10 @@ export class BuildCalculatorService {
       movementSpeed: bonuses.movementSpeed,
       critChance: bonuses.critChance + (conditional.critChance ?? 0),
       attackSpeedBonus: bonuses.attackSpeedBonus + (conditional.attackSpeedBonus ?? 0),
+      lethality: bonuses.lethality,
+      armorPenPercent: bonuses.armorPenPercent,
+      magicPenFlat: bonuses.magicPenFlat,
+      magicPenPercent: bonuses.magicPenPercent,
     };
 
     return combineStats(base, combined);

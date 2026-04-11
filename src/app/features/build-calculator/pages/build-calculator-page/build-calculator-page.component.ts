@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, inject, linkedSignal } from '@angular/core';
 
 import { ZardSelectComponent, ZardSelectItemComponent } from '@/shared/components/select';
 import { STAT_DEFS } from '../../components/builds-comparison/builds-comparison.component';
@@ -82,7 +82,32 @@ export class BuildCalculatorPageComponent {
   protected readonly build = inject(BuildCalculatorService);
   protected readonly manager = inject(BuildsManagerService);
   protected readonly statOptions = STAT_DEFS.map(d => ({ value: d.key, label: d.label }));
-  protected readonly selectedStatKeys = signal<string[]>(STAT_DEFS.map(d => d.key));
+
+  // linkedSignal: auto-computes from builds, but the user can override via the select.
+  // Resets to the computed value whenever savedBuilds changes (build added/removed/edited).
+  protected readonly selectedStatKeys = linkedSignal(() => this.computeStatKeys());
+
+  constructor() {
+    // SSR serializes the linkedSignal value via TransferState; override it on the client
+    // after hydration so the browser reflects the actual (empty) savedBuilds state.
+    afterNextRender(() => {
+      this.selectedStatKeys.set(this.computeStatKeys());
+    });
+  }
+
+  private computeStatKeys(): string[] {
+    const builds = this.manager.savedBuilds();
+    if (builds.length === 0) return [];
+    return STAT_DEFS
+      .filter(def => builds.some(build => {
+        const finalVal = def.getValue(build);
+        const baseVal = def.getBaseValue
+          ? def.getBaseValue(build)
+          : (build.baseStats as unknown as Record<string, number>)?.[def.key] ?? 0;
+        return Math.abs(finalVal - baseVal) > 0.001;
+      }))
+      .map(def => def.key);
+  }
 
   protected onModalClose(items: (Item | null)[]): void {
     this.build.applyItems(items);

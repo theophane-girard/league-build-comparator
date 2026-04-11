@@ -37,6 +37,10 @@ export class BuildsManagerService {
             movementSpeed: itemBonuses.movementSpeed,
             critChance: itemBonuses.critChance + (conditional.critChance ?? 0),
             attackSpeedBonus: itemBonuses.attackSpeedBonus + (conditional.attackSpeedBonus ?? 0),
+            lethality: itemBonuses.lethality,
+            armorPenPercent: itemBonuses.armorPenPercent,
+            magicPenFlat: itemBonuses.magicPenFlat,
+            magicPenPercent: itemBonuses.magicPenPercent,
           });
           const damageStats = champion.spells?.length
             ? calculateDamageStats(champion.spells, getSpellRanks(level), finalStats, baseStats, build.items, toggles)

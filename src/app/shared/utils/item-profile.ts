@@ -14,12 +14,14 @@ import type {
 /** Parses {@as|X% stat} markup from Meraki effects text into scaling ratios */
 export function parseEffectRatios(effects: string): ParsedEffectRatio[] {
   const ratios: ParsedEffectRatio[] = [];
-  // Match {{as|X% ...}} where X starts with a digit (skip pure-label tags like {{as|bonus physical damage}})
-  const regex = /\{\{as\|(\d+(?:\.\d+)?)%\s*(.*?)(?:\|[^}]*)?\}\}/gi;
+  // Match {{as|X% ...}} and {{as|(+ X% ...)}} where X starts with a digit
+  // (skip pure-label tags like {{as|bonus physical damage}})
+  const regex = /\{\{as\|(?:\([+\-]?\s*)?(\d+(?:\.\d+)?)%\s*(.*?)(?:\|[^}]*)?\}\}/gi;
   let match: RegExpExecArray | null;
   while ((match = regex.exec(effects)) !== null) {
     const coeff = parseFloat(match[1]) / 100;
     const desc = match[2]
+      .replace(/\).*$/, '')           // strip trailing ) from (+ X% stat) format
       .replace(/'{3}/g, '')           // strip wiki bold '''
       .replace(/\[\[.*?\]\]/g, '')    // strip [[wiki links]]
       .toLowerCase()

@@ -67,6 +67,25 @@ describe('parseEffectRatios', () => {
     const ratios = parseEffectRatios("{{as|80% '''bonus''' AD}}");
     expect(ratios[0]?.stat).toBe('bonusAD');
   });
+
+  it('parses (+ X% stat) format — Hextech Gunblade style', () => {
+    const ratios = parseEffectRatios('dealing damage {{as|(+ 30% AP)}} magic damage');
+    expect(ratios).toHaveLength(1);
+    expect(ratios[0]).toEqual({ coeff: 0.3, stat: 'AP' });
+  });
+
+  it('parses (+ X% bonus AD) format', () => {
+    const ratios = parseEffectRatios("gain {{as|(+ 10% '''bonus''' AD)}} ability haste");
+    expect(ratios).toHaveLength(1);
+    expect(ratios[0]).toEqual({ coeff: 0.1, stat: 'bonusAD' });
+  });
+
+  it('parses mixed flat and (+ X%) formats in one text', () => {
+    // Stormsurge: {{as|125|magic damage}} {{as|(+ 25% AP)}}
+    const ratios = parseEffectRatios('deal {{as|125|magic damage}} {{as|(+ 25% AP)}} magic damage');
+    expect(ratios).toHaveLength(1);
+    expect(ratios[0]).toEqual({ coeff: 0.25, stat: 'AP' });
+  });
 });
 
 // ---------------------------------------------------------------------------

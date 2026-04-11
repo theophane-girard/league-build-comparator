@@ -133,6 +133,9 @@ import type { Item } from '../../models/item.model';
                     <span class="text-xs text-muted-foreground">
                       @for (eff of item.activeEffects || []; track eff.name) {
                         {{ eff.name }}
+                        @for (ratio of eff.ratios; track ratio.stat) {
+                          · +{{ fmtPct(ratio.coeff) }}% {{ ratio.stat }}
+                        }
                       }
                     </span>
                   </div>

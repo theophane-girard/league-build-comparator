@@ -28,6 +28,10 @@ export function sumItemStats(items: Item[]): ItemBonuses {
     movementSpeed: 0,
     critChance: 0,
     attackSpeedBonus: 0,
+    lethality: 0,
+    armorPenPercent: 0,
+    magicPenFlat: 0,
+    magicPenPercent: 0,
   };
 
   for (const item of items) {
@@ -41,6 +45,10 @@ export function sumItemStats(items: Item[]): ItemBonuses {
     bonuses.movementSpeed += s.FlatMovementSpeedMod ?? 0;
     bonuses.critChance += (s.FlatCritChanceMod ?? 0) * 100;
     bonuses.attackSpeedBonus += s.PercentAttackSpeedMod ?? 0;
+    bonuses.lethality += item.lethality ?? 0;
+    bonuses.armorPenPercent += item.armorPenPercent ?? 0;
+    bonuses.magicPenFlat += item.magicPenFlat ?? 0;
+    bonuses.magicPenPercent += item.magicPenPercent ?? 0;
   }
 
   return bonuses;
@@ -93,6 +101,10 @@ export function combineStats(base: BaseStats, bonuses: ItemBonuses): FinalStats 
     attackRange: base.attackRange,
     movementSpeed: base.movementSpeed + bonuses.movementSpeed,
     critChance: Math.min(100, base.critChance + bonuses.critChance),
+    lethality: bonuses.lethality,
+    armorPenPercent: bonuses.armorPenPercent,
+    magicPenFlat: bonuses.magicPenFlat,
+    magicPenPercent: bonuses.magicPenPercent,
     physicalDamageReduction: (armor / (100 + armor)) * 100,
     magicalDamageReduction: (magicResist / (100 + magicResist)) * 100,
     effectiveHpPhysical: hp * (100 + armor) / 100,

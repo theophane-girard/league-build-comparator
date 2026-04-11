@@ -90,4 +90,9 @@ export interface Item {
   activeEffects?: ItemActiveEffect[];
   passiveEffects?: ItemPassiveEffect[];
   conditionalBonus?: ItemConditionalBonus;
+  /** Penetration stats from Meraki (not present in DDragon item.stats) */
+  lethality?: number;
+  armorPenPercent?: number;
+  magicPenFlat?: number;
+  magicPenPercent?: number;
 }

@@ -303,6 +303,12 @@ export class DdragonService {
       }),
     ]);
 
+    // Meraki sometimes uses legacy IDs that differ from current DDragon IDs.
+    // Build a name→MerakiItem map as fallback for when ID lookup misses.
+    const merakiByName = merakiItems
+      ? new Map(Object.values(merakiItems).map(m => [m.name.toLowerCase(), m]))
+      : null;
+
     const mapEntry = ([id, item]: [string, ItemRaw]): Item => {
       const base: Item = {
         id,
@@ -320,7 +326,7 @@ export class DdragonService {
       };
 
       if (merakiItems) {
-        const meraki = merakiItems[id];
+        const meraki = merakiItems[id] ?? merakiByName?.get(item.name.toLowerCase());
         if (meraki) {
           const passives = meraki.passives ?? [];
           const active = meraki.active ?? [];
@@ -332,6 +338,10 @@ export class DdragonService {
             ? computeConditionalBonus(passives)
             : undefined;
           base.roleTags = meraki.shop?.tags ?? [];
+          base.lethality = meraki.stats['lethality']?.flat || undefined;
+          base.armorPenPercent = meraki.stats['armorPenetration']?.percent || undefined;
+          base.magicPenFlat = meraki.stats['magicPenetration']?.flat || undefined;
+          base.magicPenPercent = meraki.stats['magicPenetration']?.percent || undefined;
         }
       }
 
@@ -344,7 +354,7 @@ export class DdragonService {
 
     const list: Item[] = Object.entries(ddragonData.data)
       .filter(([id, item]) => {
-        const meraki = merakiItems?.[id];
+        const meraki = merakiItems?.[id] ?? merakiByName?.get(item.name.toLowerCase());
         if (meraki?.rank?.includes('DISTRIBUTED')) return false;
         if (meraki?.tier === 4) return true; // transformation items (e.g. Seraph's Embrace, Muramana)
         return (
