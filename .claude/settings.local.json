@@ -30,7 +30,10 @@
       "mcp__chrome-devtools__fill",
       "mcp__chrome-devtools__hover",
       "Bash(npx ng:*)",
-      "mcp__chrome-devtools__new_page"
+      "mcp__chrome-devtools__new_page",
+      "Bash(npm run:*)",
+      "Bash(npx jest:*)",
+      "Bash(npx vitest:*)"
     ]
   }
 }

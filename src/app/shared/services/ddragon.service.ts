@@ -74,6 +74,7 @@ interface MerakiSpellEffect {
 
 interface MerakiSpell {
   name: string;
+  icon: string;
   blurb: string;
   effects: MerakiSpellEffect[];
   cooldown: { modifiers: MerakiSpellModifier[] } | null;
@@ -241,6 +242,7 @@ export class DdragonService {
 
     const mapMerakiSpell = (s: MerakiSpell): ChampionSpell => ({
       name: s.name ?? '',
+      icon: s.icon ?? '',
       description: s.blurb ?? '',
       cooldown: s.cooldown?.modifiers?.[0]?.values ?? [],
       leveling: (s.effects ?? []).flatMap(e => e.leveling ?? []).map((l): SpellLevelingEntry => ({
@@ -393,5 +395,11 @@ export class DdragonService {
     const v = this.version();
     if (!v) return '';
     return `${BASE_URL}/cdn/${v}/img/item/${itemId}.png`;
+  }
+
+  getPassiveImageUrl(imageFullName: string): string {
+    const v = this.version();
+    if (!v) return '';
+    return `${BASE_URL}/cdn/${v}/img/passive/${imageFullName}`;
   }
 }

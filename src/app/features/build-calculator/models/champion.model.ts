@@ -11,6 +11,7 @@ export interface SpellLevelingEntry {
 export interface ChampionSpell {
   name: string;
   description: string;
+  icon: string;
   cooldown: number[];
   leveling: SpellLevelingEntry[];
   damageType: string | null;
