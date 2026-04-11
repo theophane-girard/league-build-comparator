@@ -65,11 +65,12 @@ function formatLevelingEntry(
     ? ` <span style="color:rgba(255,255,255,0.45);font-size:0.7rem">(= ${Math.round(calculatedTotal)})</span>`
     : '';
 
+  const valuesHtml = parts.join('<span style="color:rgba(255,255,255,0.4)"> + </span>');
+
   return (
-    `<div style="display:flex;align-items:baseline;gap:.25rem;margin-top:.15rem">` +
-    `<span style="color:rgba(255,255,255,0.5);font-size:0.7rem;white-space:nowrap">${entry.attribute}:</span>` +
-    `<span>${parts.join('<span style="color:rgba(255,255,255,0.4)"> + </span>')}</span>` +
-    `${totalSpan}` +
+    `<div style="display:flex;align-items:baseline;flex-wrap:wrap;gap:.25rem;margin-top:.15rem">` +
+    `<span style="color:rgba(255,255,255,0.5);font-size:0.7rem">${entry.attribute}:</span>` +
+    `<span style="white-space:nowrap">${valuesHtml}${totalSpan}</span>` +
     `</div>`
   );
 }
