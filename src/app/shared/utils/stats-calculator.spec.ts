@@ -163,6 +163,10 @@ describe('combineStats', () => {
     movementSpeed: 0,
     critChance: 25,
     attackSpeedBonus: 0.3,
+    lethality: 0,
+    armorPenPercent: 0,
+    magicPenFlat: 0,
+    magicPenPercent: 0,
   };
 
   it('adds flat bonuses to base stats', () => {
@@ -210,6 +214,7 @@ describe('sumConditionalBonuses', () => {
     hp: 0, mp: 0, armor: 100, magicResist: 60,
     attackDamage: 0, abilityPower: 0, movementSpeed: 0,
     critChance: 0, attackSpeedBonus: 0,
+    lethality: 0, armorPenPercent: 0, magicPenFlat: 0, magicPenPercent: 0,
   };
 
   it('returns empty object when no conditional items', () => {
