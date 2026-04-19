@@ -9,6 +9,13 @@ const COLOR_MR = '#7ec4e4';
 const COLOR_HP = '#71c56d';
 const COLOR_FLAT = '#e2e8f0';
 
+const DAMAGE_TYPE_COLORS: Record<string, string> = {
+  PHYSICAL_DAMAGE: COLOR_AD,   // orange
+  MAGIC_DAMAGE:    COLOR_AP,   // purple
+  TRUE_DAMAGE:     '#ffffff',  // white
+  MIXED_DAMAGE:    COLOR_AP,   // purple par défaut pour mixte
+};
+
 function getUnitColor(unit: string): string {
   const u = unit.toLowerCase();
   if (u.includes('ap') || u.includes('ability power')) return COLOR_AP;
@@ -36,6 +43,7 @@ function formatLevelingEntry(
   rankIndex: number,
   stats: FinalStats,
   bonusAD: number,
+  damageType: string | null,
 ): string {
   const parts: string[] = [];
   let calculatedTotal = 0;
@@ -61,8 +69,9 @@ function formatLevelingEntry(
 
   if (!parts.length) return '';
 
+  const totalColor = damageType ? (DAMAGE_TYPE_COLORS[damageType] ?? 'rgba(255,255,255,0.45)') : 'rgba(255,255,255,0.45)';
   const totalSpan = hasScaling
-    ? ` <span style="color:rgba(255,255,255,0.45);font-size:0.7rem">(= ${Math.round(calculatedTotal)})</span>`
+    ? ` <span style="color:rgba(255,255,255,0.5);font-size:0.7rem">= <span style="color:${totalColor};font-weight:600">${Math.round(calculatedTotal)}</span></span>`
     : '';
 
   const valuesHtml = parts.join('<span style="color:rgba(255,255,255,0.4)"> + </span>');
@@ -84,7 +93,7 @@ export function formatSpellDescription(
   const rankIndex = Math.max(0, rank - 1);
 
   const descHtml = spell.description
-    ? `<p style="color:rgba(255,255,255,0.75);font-size:0.75rem;line-height:1.4;margin-bottom:.35rem">${spell.description}</p>`
+    ? `<p style="color:rgba(255,255,255,0.75);font-size:0.75rem;line-height:1.4;margin-bottom:.35rem">${spell.description.replace(/\n/g, '<br>').replace(/<br\s*\/?>/gi, '<br>')}</p>`
     : '';
 
   const cooldown = spell.cooldown[rankIndex];
@@ -93,7 +102,7 @@ export function formatSpellDescription(
     : '';
 
   const levelingRows = spell.leveling
-    .map(entry => formatLevelingEntry(entry, rankIndex, stats, bonusAD))
+    .map(entry => formatLevelingEntry(entry, rankIndex, stats, bonusAD, spell.damageType))
     .filter(Boolean)
     .join('');
 

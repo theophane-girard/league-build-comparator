@@ -3,20 +3,26 @@ import { ChangeDetectionStrategy, Component, inject, input, output } from '@angu
 import { ZardIconComponent } from '@/shared/components/icon';
 import { DdragonService } from '@/shared/services/ddragon.service';
 import type { Item } from '../../models/item.model';
+import { ZardButtonComponent } from '@/shared/components/button';
 
 @Component({
   selector: 'app-item-slot',
-  imports: [ZardIconComponent],
+  imports: [ZardIconComponent, ZardButtonComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <div class="relative group">
       <button
+        z-button
         type="button"
         class="cursor-pointer w-14 h-14 rounded-lg border-2 border-dashed border-border flex items-center justify-center
                bg-muted/30 hover:bg-muted/60 transition-colors focus-visible:outline-none
                focus-visible:ring-2 focus-visible:ring-ring overflow-hidden"
         [class]="item() ? 'border-solid border-border' : ''"
-        [attr.aria-label]="item() ? 'Slot ' + (index() + 1) + ': ' + item()!.name + '. Click to change.' : 'Slot ' + (index() + 1) + ': empty. Click to add item.'"
+        [attr.aria-label]="
+          item()
+            ? 'Slot ' + (index() + 1) + ': ' + item()!.name + '. Click to change.'
+            : 'Slot ' + (index() + 1) + ': empty. Click to add item.'
+        "
         (click)="slotClick.emit(index())"
       >
         @if (item()) {
@@ -33,6 +39,7 @@ import type { Item } from '../../models/item.model';
       </button>
       @if (item()) {
         <button
+          z-button
           type="button"
           class="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-destructive text-destructive-foreground
                  flex items-center justify-center opacity-0 group-hover:opacity-100 group-focus-within:opacity-100

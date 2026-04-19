@@ -135,7 +135,7 @@ const SPELL_MAX_RANKS = [5, 5, 5, 3] as const;
                 <ng-template #passiveTooltip>
                   <z-popover class="w-64 p-3">
                     <p class="font-semibold text-sm mb-1">{{ champion.passive.name }}</p>
-                    <p class="text-xs text-muted-foreground leading-relaxed">{{ champion.passive.description }}</p>
+                    <p class="text-xs text-muted-foreground leading-relaxed" [innerHTML]="champion.passive.description"></p>
                   </z-popover>
                 </ng-template>
                 <div
@@ -194,20 +194,17 @@ const SPELL_MAX_RANKS = [5, 5, 5, 3] as const;
                           <p class="text-[10px] text-muted-foreground">{{ spellKey }} · Rank {{ rank }}/{{ maxRank }}</p>
                         </div>
                       </div>
-                      @if (finalStats()) {
-                        <div
-                          class="text-xs leading-relaxed"
-                          [innerHTML]="getSpellDescription(spell, rank)"
-                        ></div>
-                      } @else {
-                        <p class="text-xs text-muted-foreground">{{ spell.description }}</p>
-                      }
+                      <div
+                        class="text-xs leading-relaxed"
+                        [innerHTML]="getSpellDescription(spell, rank)"
+                      ></div>
                     </z-popover>
                   </ng-template>
                   <div
                     class="w-8 h-8 rounded border overflow-hidden cursor-default bg-muted/40 transition-colors"
-                    [class]="spell.damageType === 'physical' ? 'border-orange-500/50'
-                           : spell.damageType === 'magical' ? 'border-purple-500/50'
+                    [class]="spell.damageType === 'PHYSICAL_DAMAGE' ? 'border-orange-500/50'
+                           : spell.damageType === 'MAGIC_DAMAGE' || spell.damageType === 'MIXED_DAMAGE' ? 'border-purple-500/50'
+                           : spell.damageType === 'TRUE_DAMAGE' ? 'border-white/40'
                            : 'border-border/60'"
                     [attr.aria-label]="spell.name + ' rank ' + rank"
                     zPopover
@@ -364,7 +361,10 @@ export class SavedBuildItemComponent {
 
   protected getSpellDescription(spell: ChampionSpell, rank: number): SafeHtml {
     const fs = this.finalStats();
-    if (!fs) return this.sanitizer.bypassSecurityTrustHtml(spell.description);
+    if (!fs) {
+      const html = spell.description.replace(/\n/g, '<br>');
+      return this.sanitizer.bypassSecurityTrustHtml(html);
+    }
     return this.sanitizer.bypassSecurityTrustHtml(
       formatSpellDescription(spell, rank, fs, this.bonusAD()),
     );
